@@ -10,7 +10,7 @@ public class MultiplayerSimulationGameManager : MonoBehaviour
     MultiplayerSimulation multiplayerSimulation;
     public MultiplayerSimulation Simulation => multiplayerSimulation;
 
-    public Queue<PlayerStateGroupMessage> PlayerStateGroupMessage { get; private set; } = new Queue<PlayerStateGroupMessage>();
+    public Queue<GameStateGroupMessage> GameStateGroupMessage { get; private set; } = new Queue<GameStateGroupMessage>();
 
     public void Awake ()
     {
@@ -20,22 +20,46 @@ public class MultiplayerSimulationGameManager : MonoBehaviour
             Destroy(this);
     }
 
-    public void EnqueuePlayerMessage (Dictionary<uint, Player>.ValueCollection values)
+    public void EnqueueObjectMessage (Dictionary<uint, Player>.ValueCollection players, Dictionary<uint, MultiplayerPoolID>.ValueCollection objects)
     {
-        PlayerStateGroupMessage groupMessage = new PlayerStateGroupMessage();
+        GameStateGroupMessage groupMessage = new GameStateGroupMessage();
         groupMessage.deliveryTime = Time.time + Simulation.LatencyInSecond;
-        foreach (Player player in values)
+
+        foreach (Player player in players)
         {
-            PlayerStateMessage inputMessage = new PlayerStateMessage(player.PlayerInput.PlayerInputTick, player.PlayerCharacter.Visual.position, player.PlayerCharacter.Visual.rotation, player.NetworkIdentity.netId);
-            groupMessage.messages.Add(inputMessage);
+            PlayerStateMessage playerStateMessage = new PlayerStateMessage(player.PlayerState.ObjectTick, player.Visual.position, player.Visual.rotation, player.NetID);
+            groupMessage.playerStateMessages.Add(playerStateMessage);
         }
 
-        PlayerStateGroupMessage.Enqueue(groupMessage);
+        foreach (MultiplayerPoolID obj in objects)
+        {
+            ObjectStateMessage inputMessage = new ObjectStateMessage(obj.ObjectState.ObjectTick, obj.transform.position, obj.transform.rotation, obj.ID);
+            groupMessage.objectStateMessage.Add(inputMessage);
+        }
+
+        GameStateGroupMessage.Enqueue(groupMessage);
     }
+
+    //public void EnqueuePlayerMessage (Dictionary<uint, SyncObject>.ValueCollection values)
+    //{
+    //    PlayerStateGroupMessage groupMessage = new PlayerStateGroupMessage();
+    //    groupMessage.deliveryTime = Time.time + Simulation.LatencyInSecond;
+    //    foreach (SyncObject obj in values)
+    //    {
+    //        uint tick = 0;
+    //        if (MultiplayerObjectGameManager.Current.Players.ContainsKey(obj.NetworkIdentity.netId) == true)
+    //            tick = MultiplayerObjectGameManager.Current.Players[obj.NetworkIdentity.netId].PlayerInput.PlayerInputTick;
+
+    //        ObjectStateMessage inputMessage = new ObjectStateMessage(tick, obj.Visual.position, obj.Visual.rotation, obj.NetworkIdentity.netId);
+    //        groupMessage.messages.Add(inputMessage);
+    //    }
+
+    //    PlayerStateGroupMessage.Enqueue(groupMessage);
+    //}
 
     public bool CanDequeueMessege()
     {
-        return PlayerStateGroupMessage.Count > 0 && Time.time > PlayerStateGroupMessage.Peek().deliveryTime;
+        return GameStateGroupMessage.Count > 0 && Time.time > GameStateGroupMessage.Peek().deliveryTime;
     }
 
     public void DequeuePlayerMessage ()
@@ -43,9 +67,16 @@ public class MultiplayerSimulationGameManager : MonoBehaviour
         if (Random.Range(0, 100) < Simulation.PackageLoss)
             return;
 
-        foreach (PlayerStateMessage playerStateMessage in PlayerStateGroupMessage.Dequeue().messages)
+        GameStateGroupMessage gameStateGroupMessage = GameStateGroupMessage.Dequeue();
+
+        foreach (PlayerStateMessage playerStateMessage in gameStateGroupMessage.playerStateMessages)
         {
             NetworkServer.SendToAll<PlayerStateMessage>(playerStateMessage, Channels.Unreliable, true);
+        }
+
+        foreach (ObjectStateMessage objectStateMessage in gameStateGroupMessage.objectStateMessage)
+        {
+            NetworkServer.SendToAll<ObjectStateMessage>(objectStateMessage, Channels.Unreliable, true);
         }
     }
 }

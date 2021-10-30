@@ -35,19 +35,19 @@ public class PlayerServerClientState : PlayerCharacterState
 
     public virtual void UpdateOtherPlayer () { }
 
-    protected void TryReconciliation ()
+    protected void TryLocalPlayerReconciliation ()
     {
-        uint lastTickIndex = Player.LocalPlayer.PlayerInput.LastInputReceived.tick % 1024;
-        Vector3 positionDiference = Player.LocalPlayer.PlayerInput.LastInputReceived.position - Player.LocalPlayer.PlayerInput.PlayerStateBuffer[lastTickIndex].position;
+        uint lastTickIndex = Player.LocalPlayer.LastSyncObjectReceived.tick % 1024;
+        Vector3 positionDiference = Player.LocalPlayer.LastSyncObjectReceived.position - Player.LocalPlayer.PlayerState.ObjectStateBuffer[lastTickIndex].position;
         if (positionDiference.sqrMagnitude > 0.00001f)
         {
-            uint rewindTick = Player.LocalPlayer.PlayerInput.LastInputReceived.tick;
-            while (rewindTick < Player.LocalPlayer.PlayerInput.PlayerInputTick)
+            uint rewindTick = Player.LocalPlayer.LastSyncObjectReceived.tick;
+            while (rewindTick < Player.LocalPlayer.PlayerState.ObjectTick)
             {
                 lastTickIndex = rewindTick % 1024;
-                Player.LocalPlayer.PlayerInput.PlayerInputBuffer[lastTickIndex] = Player.LocalPlayer.PlayerInput.currentInput;
-                Player.LocalPlayer.PlayerInput.PlayerStateBuffer[lastTickIndex].position = transform.position;
-                Player.LocalPlayer.PlayerInput.PlayerStateBuffer[lastTickIndex].rotation = transform.rotation;
+                Player.LocalPlayer.PlayerState.ObjectInputBuffer[lastTickIndex] = Player.LocalPlayer.PlayerInput.currentInput;
+                Player.LocalPlayer.PlayerState.ObjectStateBuffer[lastTickIndex].position = transform.position;
+                Player.LocalPlayer.PlayerState.ObjectStateBuffer[lastTickIndex].rotation = transform.rotation;
 
                 rewindTick += 1;
             }

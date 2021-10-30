@@ -14,6 +14,7 @@ public class MultiplayerGameManager : NetworkManager
     GameObject[] spawnPoints;
 
     public event Action OnServerConnected;
+    public event Action OnClientConnected;
 
     public override void Awake ()
     {
@@ -53,5 +54,7 @@ public class MultiplayerGameManager : NetworkManager
     {
         GameObject player = Instantiate(playerPrefab, message.position, Quaternion.identity);
         NetworkServer.AddPlayerForConnection(conn, player);
+
+        OnClientConnected?.Invoke();
     }
 }

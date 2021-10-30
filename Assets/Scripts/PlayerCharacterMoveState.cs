@@ -15,7 +15,7 @@ public class PlayerCharacterMoveState : PlayerServerClientState
     {
         base.UpdateLocalPlayer();
 
-        TryReconciliation();
+        TryLocalPlayerReconciliation();
 
         if (Player.LocalPlayer.PlayerInput.GetSpace() == true)
         {
@@ -31,8 +31,8 @@ public class PlayerCharacterMoveState : PlayerServerClientState
     {
         base.UpdateOtherPlayer();
 
-        transform.position = Context.Owner.PlayerInput.LastInputReceived.position;
-        transform.rotation = Context.Owner.PlayerInput.LastInputReceived.rotation;
+        transform.position = Context.Owner.LastSyncObjectReceived.position;
+        transform.rotation = Context.Owner.LastSyncObjectReceived.rotation;
     }
 
     public override void UpdateServerPlayer ()
@@ -49,48 +49,12 @@ public class PlayerCharacterMoveState : PlayerServerClientState
         }
     }
 
-    //public override void UpdateState ()
-    //{
-    //    base.UpdateState();
-
-    //    if (Context.IsLocalPlayer() == true)
-    //    {
-    //        TryReconciliation();
-
-    //        if (Player.LocalPlayer.PlayerInput.GetSpace() == true)
-    //        {
-    //            Context.StateMachine.ChangeState(nameof(PlayerShootingState));
-    //        } else
-    //        {
-    //            MoveAndRotate(Player.LocalPlayer.PlayerInput.GetHorizontalAxis(), Player.LocalPlayer.PlayerInput.GetVerticalAxis());
-    //        }
-    //    } else
-    //    {
-    //        if (NetworkServer.active == true)
-    //        {
-    //            if (Context.Owner.PlayerInput.GetSpace() == true)
-    //            {
-    //                Context.StateMachine.ChangeState(nameof(PlayerShootingState));
-    //            }
-    //            else
-    //            {
-    //                MoveAndRotate(Context.Owner.PlayerInput.GetHorizontalAxis(), Context.Owner.PlayerInput.GetVerticalAxis());
-    //            }
-    //        }
-    //        else
-    //        {
-    //            transform.position = Context.Owner.PlayerInput.LastInputReceived.position;
-    //            transform.rotation = Context.Owner.PlayerInput.LastInputReceived.rotation;
-    //        }
-    //    }
-    //}
-
     void MoveAndRotate(float horizontalInput, float verticalInput)
     {
         Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput);
         moveDirection.Normalize();
 
-        transform.Translate(moveDirection * speed* Time.deltaTime, Space.World);
+        transform.Translate(moveDirection * speed * Time.deltaTime, Space.World);
 
         if (moveDirection != Vector3.zero)
         {
