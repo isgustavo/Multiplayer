@@ -7,8 +7,8 @@ public class MultiplayerSimulationGameManager : MonoBehaviour
     public static MultiplayerSimulationGameManager Current;
 
     [SerializeField]
-    MultiplayerSimulation multiplayerSimulation;
-    public MultiplayerSimulation Simulation => multiplayerSimulation;
+    SOMultiplayerSimulation multiplayerSimulation;
+    public SOMultiplayerSimulation Simulation => multiplayerSimulation;
 
     public Queue<GameStateGroupMessage> GameStateGroupMessage { get; private set; } = new Queue<GameStateGroupMessage>();
 
@@ -27,7 +27,7 @@ public class MultiplayerSimulationGameManager : MonoBehaviour
 
         foreach (Player player in players)
         {
-            PlayerStateMessage playerStateMessage = new PlayerStateMessage(player.PlayerState.ObjectTick, player.Visual.position, player.Visual.rotation, player.NetID);
+            PlayerStateMessage playerStateMessage = new PlayerStateMessage(player.PlayerState.ObjectTick, player.Visual.position, player.Visual.rotation, player.NetworkIdentity.netId);
             groupMessage.playerStateMessages.Add(playerStateMessage);
         }
 
@@ -39,23 +39,6 @@ public class MultiplayerSimulationGameManager : MonoBehaviour
 
         GameStateGroupMessage.Enqueue(groupMessage);
     }
-
-    //public void EnqueuePlayerMessage (Dictionary<uint, SyncObject>.ValueCollection values)
-    //{
-    //    PlayerStateGroupMessage groupMessage = new PlayerStateGroupMessage();
-    //    groupMessage.deliveryTime = Time.time + Simulation.LatencyInSecond;
-    //    foreach (SyncObject obj in values)
-    //    {
-    //        uint tick = 0;
-    //        if (MultiplayerObjectGameManager.Current.Players.ContainsKey(obj.NetworkIdentity.netId) == true)
-    //            tick = MultiplayerObjectGameManager.Current.Players[obj.NetworkIdentity.netId].PlayerInput.PlayerInputTick;
-
-    //        ObjectStateMessage inputMessage = new ObjectStateMessage(tick, obj.Visual.position, obj.Visual.rotation, obj.NetworkIdentity.netId);
-    //        groupMessage.messages.Add(inputMessage);
-    //    }
-
-    //    PlayerStateGroupMessage.Enqueue(groupMessage);
-    //}
 
     public bool CanDequeueMessege()
     {

@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class PlayerShootingState : PlayerServerClientState
 {
-    float forceBack = 1f;
-    float rotationSpeed = 360f;
 
     float cooldown = 1f;
     float currentCooldown = 1f;
+
+    float offset = 1f;
 
     public PlayerShootingState (Transform transform) : base(transform)
     {
@@ -33,13 +33,6 @@ public class PlayerShootingState : PlayerServerClientState
 
         TryLocalPlayerReconciliation();
         Rotate(Player.LocalPlayer.PlayerInput.GetHorizontalAxis(), Player.LocalPlayer.PlayerInput.GetVerticalAxis());
-        //if (TryShoot() == false)
-        //{
-        //    return;
-        //}
-
-        //SpawnProjectile();
-        //StepBack();
         
     }
 
@@ -68,7 +61,6 @@ public class PlayerShootingState : PlayerServerClientState
         }
 
         SpawnProjectile();
-        //StepBack();
     }
 
     void Rotate(float horizontalInput, float verticalInput)
@@ -79,16 +71,10 @@ public class PlayerShootingState : PlayerServerClientState
         if (moveDirection != Vector3.zero)
         {
             Quaternion toRotate = Quaternion.LookRotation(moveDirection, Vector3.up);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotate, rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotate, Context.Stats.RotateSpeed * Time.deltaTime);
         }
     }
-    void StepBack()
-    {
-        //UIConsole.Current.AddConsole($"Context.Owner{Context.Owner.name} StepBack");
-        transform.Translate(-Context.Visual.forward * forceBack, Space.World);
-    }
 
-    float offset = 1f;
 
     bool TryShoot ()
     {
@@ -105,7 +91,8 @@ public class PlayerShootingState : PlayerServerClientState
     void SpawnProjectile()
     {
         UIConsole.Current.AddConsole($"SpawnProjectile");
-        MultiplayerPoolID obj = MultiplayerGamePoolManager.Current.Spawn("PistolProjectile");
+        MultiplayerPoolID obj = MultiplayerGamePoolManager.Current.SpawnOnServer("PistolProjectile");
+        obj.OwnerID = Context.Owner.NetworkIdentity.netId;
         obj.transform.position = Context.Visual.position + Context.Visual.forward * offset;
         obj.transform.forward = Context.Visual.forward;
 

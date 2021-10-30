@@ -2,7 +2,6 @@
 using Mirror;
 using System.Collections.Generic;
 using System;
-using System.Collections;
 
 public class GameStateGroupMessage
 {
@@ -10,6 +9,7 @@ public class GameStateGroupMessage
     public List<PlayerStateMessage> playerStateMessages = new List<PlayerStateMessage>();
     public List<ObjectStateMessage> objectStateMessage = new List<ObjectStateMessage>();
 }
+
 
 public class MultiplayerObjectGameManager : MonoBehaviour
 {
@@ -67,34 +67,22 @@ public class MultiplayerObjectGameManager : MonoBehaviour
             return;
 
         Players.Add(netId, player);
-
-        //AddObject(netId, player);
     }
 
     public void AddObject (uint netId, MultiplayerPoolID poolObj)
     {
-        //UIConsole.Current.AddConsole($"Obj Game Manager AddObject {objects.ContainsKey(netId)}");
         if (objects.ContainsKey(netId) == true)
             return;
 
-        //UIConsole.Current.AddConsole($"Obj Game Manager AddObject {netId}");
         objects.Add(netId, poolObj);
-
-        //TODO NEW message TO SPAWN and DESPAWN
-        //ObjectStateMessage objectStateMessage = new ObjectStateMessage(MultiplayerGamePoolManager.POOL_POSITION, Quaternion.identity, netId, true);
-        //NetworkServer.SendToAll<ObjectStateMessage>(objectStateMessage, Channels.Reliable, true);
     }
 
     public void RemoveObject (uint netId)
     {
-        //UIConsole.Current.AddConsole($"Obj Game Manager RemoveObject");
         if (objects.ContainsKey(netId) == false)
             return;
 
         objects.Remove(netId);
-
-        //ObjectStateMessage objectStateMessage = new ObjectStateMessage(MultiplayerGamePoolManager.POOL_POSITION, Quaternion.identity, netId, false);
-        //NetworkServer.SendToAll<ObjectStateMessage>(objectStateMessage, Channels.Reliable, true);
     }
 
     private void OnPlayerClientInputReceived (NetworkConnection conn, PlayerInputMessage message)
@@ -123,18 +111,13 @@ public class MultiplayerObjectGameManager : MonoBehaviour
         uint netId = message.netId;
         if (objects.ContainsKey(netId) == false)
         {
-            MultiplayerPoolID multiplayerPoolObject = MultiplayerGamePoolManager.Current.Spawn("PistolProjectile");
-            multiplayerPoolObject.ID = netId;
+            MultiplayerPoolID multiplayerPoolObject = MultiplayerGamePoolManager.Current.SpawnOnClient(netId);
+            if (multiplayerPoolObject == null)
+                return;
+
             multiplayerPoolObject.gameObject.SetActive(true);
             objects.Add(netId, multiplayerPoolObject);
         }
-
-        //if (message.isActive == false)
-        //{
-        //    MultiplayerGamePoolManager.Current.Despawn(objects[netId]);
-        //    objects.Remove(netId);
-        //    return;
-        //}
 
         objects[netId].LastObjectStateReceived.tick = message.tick;
         objects[netId].LastObjectStateReceived.position = message.position;

@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class PlayerCharacterMoveState : PlayerServerClientState
 {
-    float speed = 7f;
-    float rotationSpeed = 360f;
 
     public PlayerCharacterMoveState (Transform transform) : base(transform)
     {
@@ -54,12 +52,12 @@ public class PlayerCharacterMoveState : PlayerServerClientState
         Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput);
         moveDirection.Normalize();
 
-        transform.Translate(moveDirection * speed * Time.deltaTime, Space.World);
+        transform.Translate(moveDirection * Context.Stats.MoveSpeed * Time.deltaTime, Space.World);
 
         if (moveDirection != Vector3.zero)
         {
             Quaternion toRotate = Quaternion.LookRotation(moveDirection, Vector3.up);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotate, rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotate, Context.Stats.RotateSpeed * Time.deltaTime);
         }
     }
 }

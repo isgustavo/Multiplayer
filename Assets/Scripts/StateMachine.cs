@@ -39,7 +39,6 @@ public class StateMachine
         if (CurrentState?.GetType().Name == state)
             return;
 
-        Debug.Log($"CHANGE State to {state}");
         if (states.ContainsKey(state))
         {
             CurrentState?.OnLeaveState();

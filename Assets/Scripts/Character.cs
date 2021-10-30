@@ -1,15 +1,11 @@
 using UnityEngine;
 
-public class CharacterStats : ScriptableObject
-{
-
-}
 
 public class Character : MonoBehaviour
 {
     [SerializeField]
-    private CharacterStats stats;
-    public CharacterStats Stats => stats;
+    private SOMultiplayerCharacter stats;
+    public SOMultiplayerCharacter Stats => stats;
 
     public Transform Visual => gameObject.transform;
 
@@ -27,5 +23,4 @@ public class Character : MonoBehaviour
     {
 
     }
-
 }

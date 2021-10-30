@@ -20,7 +20,9 @@ public class MultiplayerGamePoolManager : MonoBehaviour
     [SerializeField]
     List<ObjectPool> listOfObject;
 
-    Dictionary<string, Queue<MultiplayerPoolID>> objects = new Dictionary<string, Queue<MultiplayerPoolID>>();
+    //Isso deveria esta em 2 projetos diferetes de Master e Client
+    Dictionary<string, Queue<MultiplayerPoolID>> serverObjects = new Dictionary<string, Queue<MultiplayerPoolID>>();
+    Dictionary<uint, MultiplayerPoolID> clientObjects = new Dictionary<uint, MultiplayerPoolID>();
 
     public bool IsInitialized { get; private set; } = false;
     public event Action OnObjectPoolFinished;
@@ -34,36 +36,32 @@ public class MultiplayerGamePoolManager : MonoBehaviour
 
     private void Start ()
     {
-        //MultiplayerGameManager.Current.OnServerConnected += OnServerConnected;
-        MultiplayerGameManager.Current.OnClientConnected += OnClientConnected;
+        MultiplayerGameManager.Current.OnServerConnected += OnServerConnected;
+        MultiplayerGameManager.Current.OnClientStarted += OnClientStarted;
 
-        StartCoroutine(CreatePool());
+        UIConsole.Current.AddConsole($"NetworkServer.active {NetworkServer.active}");
+        
     }
 
-    private void OnClientConnected ()
+    private void OnClientStarted ()
     {
-        //Dictionary<uint, NetworkIdentity> values = NetworkServer.spawned;
-
-        //foreach(NetworkIdentity n in values.Values)
-        //{
-        //    UIConsole.Current.AddConsole($"OnClientConnected {n.assetId}");
-        //    NetworkServer.Spawn(n.gameObject);
-        //}
+        MultiplayerGameManager.Current.OnClientStarted -= OnClientStarted;
+        StartCoroutine(CreatePoolOnClient());
     }
 
     private void OnServerConnected ()
     {
-        //MultiplayerGameManager.Current.OnServerConnected -= OnServerConnected;
-        //StartCoroutine(CreatePool());
+        MultiplayerGameManager.Current.OnServerConnected -= OnServerConnected;
+        StartCoroutine(CreatePoolOnServer());
     }
 
     uint poolValue = 100;
-    IEnumerator CreatePool ()
+    IEnumerator CreatePoolOnServer ()
     {
         foreach (ObjectPool obj in listOfObject)
         {
-            if (objects.ContainsKey(obj.prefab.name) == false)
-                objects.Add(obj.prefab.name, new Queue<MultiplayerPoolID>());
+            if (serverObjects.ContainsKey(obj.prefab.name) == false)
+                serverObjects.Add(obj.prefab.name, new Queue<MultiplayerPoolID>());
 
             for (int i = 0; i < obj.amount; i++)
             {
@@ -71,10 +69,8 @@ public class MultiplayerGamePoolManager : MonoBehaviour
                 newObj.name = obj.prefab.name;
                 MultiplayerPoolID poolID = newObj.GetComponent<MultiplayerPoolID>();                
                 poolID.ID = poolValue++;
-                objects[obj.prefab.name].Enqueue(poolID);
+                serverObjects[obj.prefab.name].Enqueue(poolID);
                 newObj.SetActive(false);
-                // NetworkServer.Spawn(newObj);
-                //StartCoroutine(test(newObj));
                 yield return new WaitForEndOfFrame();
             }
         }
@@ -83,15 +79,29 @@ public class MultiplayerGamePoolManager : MonoBehaviour
         OnObjectPoolFinished?.Invoke();
     }
 
-    //IEnumerator test (GameObject newObj)
-    //{
-    //    yield return new WaitForEndOfFrame();
-    //    newObj.SetActive(false);
-    //}
-
-    public MultiplayerPoolID Spawn (string objName)
+    IEnumerator CreatePoolOnClient ()
     {
-        if (objects.ContainsKey(objName) == false || objects[objName].Count <= 0)
+        foreach (ObjectPool obj in listOfObject)
+        {
+            for (int i = 0; i < obj.amount; i++)
+            {
+                GameObject newObj = GameObject.Instantiate(obj.prefab, POOL_POSITION, Quaternion.identity);
+                newObj.name = obj.prefab.name;
+                MultiplayerPoolID poolID = newObj.GetComponent<MultiplayerPoolID>();
+                poolID.ID = poolValue++;
+                clientObjects.Add(poolID.ID, poolID);
+                newObj.SetActive(false);
+                yield return new WaitForEndOfFrame();
+            }
+        }
+
+        IsInitialized = true;
+        OnObjectPoolFinished?.Invoke();
+    }
+
+    public MultiplayerPoolID SpawnOnServer (string objName)
+    {
+        if (serverObjects.ContainsKey(objName) == false || serverObjects[objName].Count <= 0)
         {
             Debug.LogError($"Pool is empty {objName}");
             UIConsole.Current.AddConsole($"Pool is empty {objName}");
@@ -100,7 +110,21 @@ public class MultiplayerGamePoolManager : MonoBehaviour
         }
         else
         {
-            return objects[objName].Dequeue();
+            return serverObjects[objName].Dequeue();
+        }
+    }
+
+    public MultiplayerPoolID SpawnOnClient (uint objId)
+    {
+        if (clientObjects.ContainsKey(objId) == false)
+        {
+            Debug.LogError($"Pool is empty {objId}");
+            UIConsole.Current.AddConsole($"Pool is empty {objId}");
+            return null;
+        }
+        else
+        {
+            return clientObjects[objId];
         }
     }
 
@@ -109,6 +133,9 @@ public class MultiplayerGamePoolManager : MonoBehaviour
         UIConsole.Current.AddConsole($"Despawn {obj.ID}");
         obj.transform.SetParent(null);
         obj.gameObject.SetActive(false);
-        objects[obj.name].Enqueue(obj);
+
+        if (NetworkServer.active)
+            serverObjects[obj.name].Enqueue(obj);
+
     }
 }

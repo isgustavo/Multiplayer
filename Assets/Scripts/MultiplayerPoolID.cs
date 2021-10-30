@@ -4,14 +4,13 @@ using UnityEngine;
 public class MultiplayerPoolID : MonoBehaviour
 {
     public uint ID;
+    public uint OwnerID;
 
     public ObjectTickState LastObjectStateReceived = new ObjectTickState();
     public ObjectState ObjectState { get; private set; } = new ObjectState();
 
     private void OnEnable ()
     {
-        //UIConsole.Current.AddConsole($"NonPlayer OnEnable NetworkIdentity.sceneId = {multiplayerPoolID.ID} ");
-
         if (NetworkServer.active)
             MultiplayerObjectGameManager.Current.AddObject(ID, this);
         else

@@ -15,6 +15,7 @@ public class MultiplayerGameManager : NetworkManager
 
     public event Action OnServerConnected;
     public event Action OnClientConnected;
+    public event Action OnClientStarted;
 
     public override void Awake ()
     {
@@ -49,6 +50,11 @@ public class MultiplayerGameManager : NetworkManager
         conn.Send(createPlayerMessage);
     }
 
+    public override void OnStartClient ()
+    {
+        base.OnStartClient();
+        OnClientStarted?.Invoke();
+    }
 
     void OnCreatePlayer (NetworkConnection conn, CreatePlayerMessage message)
     {

@@ -4,7 +4,6 @@ using UnityEngine;
 public class PlayerCharacter : Character
 {
     public Player Owner { get; private set; }
-    public CharacterController CharacterController { get; private set; }
     public StateMachine StateMachine { get; private set; }
 
     public void Awake ()
@@ -13,13 +12,11 @@ public class PlayerCharacter : Character
 
         Dictionary<string, State> states = new Dictionary<string, State>
         {
-            { nameof(PlayerCharacterMoveState), new PlayerCharacterMoveState(transform)},
+             { nameof(PlayerCharacterMoveState), new PlayerCharacterMoveState(transform)},
              { nameof(PlayerShootingState), new PlayerShootingState(transform)},
         };
 
         StateMachine = new StateMachine(states, nameof(PlayerCharacterMoveState));
-
-        CharacterController = transform.GetComponent<CharacterController>();
     }
 
     public override void UpdateCharacter ()
