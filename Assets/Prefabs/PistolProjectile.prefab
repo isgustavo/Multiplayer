@@ -11,8 +11,7 @@ GameObject:
   - component: {fileID: 3676963324446392561}
   - component: {fileID: 3676963324446392562}
   - component: {fileID: 3676963324446392563}
-  - component: {fileID: 3676963324446392560}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -83,19 +82,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &3676963324446392560
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3676963324446392566}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3676963324883374037
 GameObject:
   m_ObjectHideFlags: 0
@@ -105,10 +91,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3676963324883374036}
-  - component: {fileID: -1354414402158764888}
   - component: {fileID: -2221834262220058380}
   - component: {fileID: -2818858845294551715}
-  m_Layer: 0
+  - component: {fileID: 7069596095216393599}
+  m_Layer: 10
   m_Name: PistolProjectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -130,19 +116,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-1354414402158764888
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3676963324883374037}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 009e217a1aa0dc545883233095573f08, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ID: 0
 --- !u!114 &-2221834262220058380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,6 +128,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fb1465b5e3b91a44a42ed5be3f3d52b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ID: 0
+  OwnerID: 0
 --- !u!114 &-2818858845294551715
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,6 +142,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1efc6bbe79a785c438226b59deb88284, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 4
-  lifetime: 2
-  currentLifetime: 0
+  projectileStats: {fileID: 11400000, guid: 5ce488526c1cc534bac66abc54c20e28, type: 2}
+--- !u!135 &7069596095216393599
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3676963324883374037}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.25
+  m_Center: {x: 0, y: 0, z: 0}

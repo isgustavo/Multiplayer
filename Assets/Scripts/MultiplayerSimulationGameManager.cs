@@ -20,7 +20,7 @@ public class MultiplayerSimulationGameManager : MonoBehaviour
             Destroy(this);
     }
 
-    public void EnqueueObjectMessage (Dictionary<uint, Player>.ValueCollection players, Dictionary<uint, MultiplayerPoolID>.ValueCollection objects)
+    public void EnqueueObjectMessage (Dictionary<uint, Player>.ValueCollection players, Dictionary<uint, NonPlayer>.ValueCollection objects)
     {
         GameStateGroupMessage groupMessage = new GameStateGroupMessage();
         groupMessage.deliveryTime = Time.time + Simulation.LatencyInSecond;
@@ -31,9 +31,9 @@ public class MultiplayerSimulationGameManager : MonoBehaviour
             groupMessage.playerStateMessages.Add(playerStateMessage);
         }
 
-        foreach (MultiplayerPoolID obj in objects)
+        foreach (NonPlayer obj in objects)
         {
-            ObjectStateMessage inputMessage = new ObjectStateMessage(obj.ObjectState.ObjectTick, obj.transform.position, obj.transform.rotation, obj.ID);
+            ObjectStateMessage inputMessage = new ObjectStateMessage(obj.ObjectState.ObjectTick, obj.characterLogic.GetTransform().position, obj.characterLogic.GetTransform().rotation, obj.ID, obj.OwnerID, obj.characterLogic.GetLife());
             groupMessage.objectStateMessage.Add(inputMessage);
         }
 

@@ -1,17 +1,26 @@
 ﻿using UnityEngine;
 using Mirror;
 
-public class ProjectileLogic : MonoBehaviour
+public interface IProjectile
 {
-    MultiplayerPoolID poolID;
+    int GetDamage ();
+    uint GetOnwerId ();
+    void ForceDespawn ();
+}
 
-    public float speed = 1f;
-    public float lifetime = 2f;
-    public float currentLifetime;
+public class ProjectileLogic : MonoBehaviour, IProjectile, ICharacterLogic
+{
+    public static int COLLIDER_LAYER = 1 << 10;
+    NonPlayer poolID;
+
+    [SerializeField]
+    SOMultiplayerProjectile projectileStats;
+
+    float currentLifetime;
 
     private void Awake ()
     {
-        poolID = GetComponent<MultiplayerPoolID>();
+        poolID = GetComponent<NonPlayer>();
     }
 
     private void OnEnable ()
@@ -21,12 +30,40 @@ public class ProjectileLogic : MonoBehaviour
 
     private void Update ()
     {
-        if (currentLifetime > lifetime)
-            MultiplayerGamePoolManager.Current.Despawn(poolID);
+        if (currentLifetime > projectileStats.Lifetime)
+            ForceDespawn();
 
         currentLifetime += Time.deltaTime;
 
-        transform.Translate(transform.forward * speed * Time.deltaTime, Space.World);
+        transform.Translate(transform.forward * projectileStats.Speed * Time.deltaTime, Space.World);
     }
 
+    public int GetDamage ()
+    {
+        return projectileStats.Damage;
+    }
+
+    public uint GetOnwerId ()
+    {
+        return poolID.OwnerID;
+    }
+
+    public void ForceDespawn ()
+    {
+        MultiplayerGamePoolManager.Current.Despawn(poolID);
+    }
+
+    public Transform GetTransform ()
+    {
+        return transform;
+    }
+
+    public int GetLife ()
+    {
+        return 1;
+    }
+
+    public void SetLife (int life)
+    {
+    }
 }

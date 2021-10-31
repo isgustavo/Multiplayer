@@ -7,7 +7,9 @@ public class BotShootingState : BotCharacterState
 
     float cooldown = 1f;
     float currentCooldown = 1f;
-    float offset = 1f;
+
+    float offsetForward = 2f;
+    float offsetUp = 1.6f;
 
     public BotShootingState (Transform transform) : base(transform)
     {
@@ -26,7 +28,8 @@ public class BotShootingState : BotCharacterState
     {
         base.UpdateState();
 
-        Quaternion toRotate = Quaternion.LookRotation((target.position - Context.Visual.position).normalized, Vector3.up);
+        Vector3 direction = (target.position - Context.Visual.position).normalized;
+        Quaternion toRotate = Quaternion.LookRotation(new Vector3(direction.x, 0f, direction.z), Vector3.up);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotate, 360f * Time.deltaTime);
 
         if (TryShoot())
@@ -61,12 +64,11 @@ public class BotShootingState : BotCharacterState
 
     void SpawnProjectile ()
     {
-        UIConsole.Current.AddConsole($"SpawnProjectile");
+        //UIConsole.Current.AddConsole($"SpawnProjectile");
         MultiplayerPoolID obj = MultiplayerGamePoolManager.Current.SpawnOnServer("PistolProjectile");
-        obj.OwnerID = Context.Owner.MultiplayerPoolID.ID;
-        obj.transform.position = Context.Visual.position + Context.Visual.forward * offset;
+        obj.OwnerID = Context.Owner.ID;
+        obj.transform.position = Context.Visual.position + Context.Visual.forward * offsetForward + Context.Visual.up * offsetUp;
         obj.transform.forward = Context.Visual.forward;
-
         obj.gameObject.SetActive(true);
     }
 }

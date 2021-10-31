@@ -7,22 +7,9 @@ public class MultiplayerPoolID : MonoBehaviour
     public uint OwnerID;
 
     public ObjectTickState LastObjectStateReceived = new ObjectTickState();
-    public ObjectState ObjectState { get; private set; } = new ObjectState();
+    public ObjectState ObjectState { get; protected set; } = new ObjectState();
 
-    private void OnEnable ()
-    {
-        if (NetworkServer.active)
-            MultiplayerObjectGameManager.Current.AddObject(ID, this);
-        else
-        {
-            ObjectState = new ObjectState();
-
-            LastObjectStateReceived.position = transform.position;
-            LastObjectStateReceived.rotation = transform.rotation;
-        }
-    }
-
-    private void OnDisable ()
+    public virtual void OnDisable ()
     {
         MultiplayerObjectGameManager.Current.RemoveObject(ID);
     }

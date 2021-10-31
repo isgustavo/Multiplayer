@@ -34,6 +34,17 @@ public class PlayerCharacter : Character
         StateMachine.LateUpdateState();
     }
 
+    public override void OnCollision (Collider collider)
+    {
+        base.OnCollision(collider);
+
+        IProjectile projectile = collider.GetComponent<IProjectile>();
+        if (projectile == null)
+            return;
+
+        TakeDamage(projectile.GetDamage());
+    }
+
     public bool IsLocalPlayer ()
     {
         return Player.LocalPlayer != null && Player.LocalPlayer.PlayerCharacter.GetInstanceID() == GetInstanceID();

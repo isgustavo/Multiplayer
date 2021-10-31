@@ -6,7 +6,7 @@ public class MultiplayerBotManager : MonoBehaviour
 {
     public static MultiplayerBotManager Current;
 
-    Dictionary<uint, MultiplayerPoolID> bots = new Dictionary<uint, MultiplayerPoolID>();
+    Dictionary<uint, Bot> bots = new Dictionary<uint, Bot>();
 
     GameObject[] botSpawnPoints;
 
@@ -51,7 +51,6 @@ public class MultiplayerBotManager : MonoBehaviour
         obj.transform.position = startPosition;
         obj.transform.rotation = Quaternion.identity;
 
-        bots.Add(obj.ID, obj);
         obj.gameObject.SetActive(true);
     }
 
@@ -68,5 +67,21 @@ public class MultiplayerBotManager : MonoBehaviour
         {
             return GetPatrolPoint(currentPoint);
         }
+    }
+
+    public void AddBot(Bot bot)
+    {
+        if (bots.ContainsKey(bot.ID) == true)
+            return;
+
+        bots.Add(bot.ID, bot);
+    }
+
+    public void RemoveBot(uint id)
+    {
+        if (bots.ContainsKey(id) == false)
+            return;
+
+        bots.Remove(id);
     }
 }

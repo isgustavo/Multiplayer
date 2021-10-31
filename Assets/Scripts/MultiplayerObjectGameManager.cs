@@ -17,7 +17,7 @@ public class MultiplayerObjectGameManager : MonoBehaviour
 
     bool isServerConnected = false;
     public Dictionary<uint, Player> Players { get; private set; } = new Dictionary<uint, Player>();
-    Dictionary<uint, MultiplayerPoolID> objects = new Dictionary<uint, MultiplayerPoolID>();
+    Dictionary<uint, NonPlayer> objects = new Dictionary<uint, NonPlayer>();
 
     private void Awake ()
     {
@@ -69,7 +69,7 @@ public class MultiplayerObjectGameManager : MonoBehaviour
         Players.Add(netId, player);
     }
 
-    public void AddObject (uint netId, MultiplayerPoolID poolObj)
+    public void AddObject (uint netId, NonPlayer poolObj)
     {
         if (objects.ContainsKey(netId) == true)
             return;
@@ -111,14 +111,18 @@ public class MultiplayerObjectGameManager : MonoBehaviour
         uint netId = message.netId;
         if (objects.ContainsKey(netId) == false)
         {
-            MultiplayerPoolID multiplayerPoolObject = MultiplayerGamePoolManager.Current.SpawnOnClient(netId);
+            NonPlayer multiplayerPoolObject = MultiplayerGamePoolManager.Current.SpawnOnClient(netId);
             if (multiplayerPoolObject == null)
+            {
                 return;
+            }
 
+            multiplayerPoolObject.OwnerID = message.onwerId;
             multiplayerPoolObject.gameObject.SetActive(true);
             objects.Add(netId, multiplayerPoolObject);
         }
 
+        objects[netId].characterLogic.SetLife(message.life);
         objects[netId].LastObjectStateReceived.tick = message.tick;
         objects[netId].LastObjectStateReceived.position = message.position;
         objects[netId].LastObjectStateReceived.rotation = message.rotation;
@@ -132,9 +136,9 @@ public class MultiplayerObjectGameManager : MonoBehaviour
             NetworkServer.SendToAll<PlayerStateMessage>(playerStateMessage, Channels.Unreliable, true);
         }
 
-        foreach (MultiplayerPoolID obj in objects.Values)
+        foreach (NonPlayer obj in objects.Values)
         {
-            ObjectStateMessage objectStateMessage = new ObjectStateMessage(obj.ObjectState.ObjectTick, obj.transform.position, obj.transform.rotation, obj.ID);
+            ObjectStateMessage objectStateMessage = new ObjectStateMessage(obj.ObjectState.ObjectTick, obj.characterLogic.GetTransform().position, obj.characterLogic.GetTransform().rotation, obj.ID, obj.OwnerID, obj.characterLogic.GetLife());
             NetworkServer.SendToAll<ObjectStateMessage>(objectStateMessage, Channels.Unreliable, true);
         }
     }

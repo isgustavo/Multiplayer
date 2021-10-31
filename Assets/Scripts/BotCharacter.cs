@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
-public class BotCharacter : Character
+public class BotCharacter : Character, ICharacterLogic
 {
     public Bot Owner { get; private set; }
     public StateMachine StateMachine { get; private set; }
@@ -25,12 +26,14 @@ public class BotCharacter : Character
     public CharacterAwareness awareness { get; private set; }
     public event Action OnCurrentTargetChanged;
 
-    public void Awake ()
+    public override void Awake ()
     {
-        if (NetworkServer.active == false)
-            return;
+        base.Awake();
 
         Owner = transform.GetComponentInParent<Bot>();
+
+        if (NetworkServer.active == false)
+            return;
 
         Dictionary<string, State> states = new Dictionary<string, State>
         {
@@ -43,10 +46,16 @@ public class BotCharacter : Character
         StateMachine = new StateMachine(states, nameof(BotWaitState));
 
         awareness = GetComponent<CharacterAwareness>();
+
     }
 
-    private void OnEnable ()
+    public override void OnEnable ()
     {
+        base.OnEnable();
+
+        if (NetworkServer.active == false)
+            return;
+
         awareness.OnAwernessTriggerEnter += OnAwernessTriggerEnter;
         awareness.OnAwernessTriggerExit += OnAwernessTriggerExit;
 
@@ -56,6 +65,11 @@ public class BotCharacter : Character
 
     private void OnDisable ()
     {
+
+        if (NetworkServer.active == false)
+            return;
+        currentTarget = null;
+
         awareness.OnAwernessTriggerEnter -= OnAwernessTriggerEnter;
         awareness.OnAwernessTriggerExit -= OnAwernessTriggerExit;
 
@@ -78,6 +92,51 @@ public class BotCharacter : Character
         StateMachine.LateUpdateState();
     }
 
+    public override void OnCollision (Collider collider)
+    {
+        base.OnCollision(collider);
+
+        IProjectile projectile = collider.GetComponent<IProjectile>();
+        if (projectile == null)
+            return;
+
+        projectile.ForceDespawn();
+
+        if (NetworkServer.active == true)
+        {
+            TakeDamage(projectile.GetDamage());
+        } else
+        {
+            if (MultiplayerObjectGameManager.Current.Players.ContainsKey(projectile.GetOnwerId()) == false)
+            {
+                return;
+            }
+
+            GameObject damageVFX = VisualGamePoolManager.Current.Spawn("BotDamage");
+
+            if (damageVFX == null)
+                return;
+
+            damageVFX.transform.position = transform.position;
+            damageVFX.transform.rotation = Quaternion.FromToRotation(Vector3.forward, collider.transform.forward);
+            damageVFX.SetActive(true);
+        }
+    }
+
+    protected override void Dead ()
+    {
+        base.Dead();
+
+        StartCoroutine(WaitToDespawn());
+    }
+
+
+    IEnumerator WaitToDespawn()
+    {
+        yield return new WaitForEndOfFrame();
+        MultiplayerGamePoolManager.Current.Despawn(Owner);
+    }
+
     private void OnClosestTriggerEnter (Collider collider)
     {
         if (1 << collider.gameObject.layer != Player.COLLIDER_LAYER)
@@ -85,7 +144,7 @@ public class BotCharacter : Character
 
         SetTarget(collider.transform);
 
-        StateMachine.ChangeState(nameof(BotShootingState));
+       StateMachine.ChangeState(nameof(BotShootingState));
     }
 
     private void OnClosestTriggerExit (Collider collider)
@@ -99,7 +158,7 @@ public class BotCharacter : Character
         if (currentTarget.GetInstanceID() != collider.transform.GetInstanceID())
             return;
 
-        StateMachine.ChangeState(nameof(BotChaseState));
+       StateMachine.ChangeState(nameof(BotChaseState));
     }
 
     private void OnAwernessTriggerExit (Collider collider)
@@ -137,5 +196,20 @@ public class BotCharacter : Character
     public Transform GetTarget()
     {
         return CurrentTarget;
+    }
+
+    public Transform GetTransform ()
+    {
+        return gameObject.transform;
+    }
+
+    public int GetLife ()
+    {
+        return CurrentLife;
+    }
+
+    public void SetLife (int life)
+    {
+        CurrentLife = life;
     }
 }
