@@ -4,9 +4,9 @@ public class PlayerState : ObjectState
 {
     public byte[] ObjectInputBuffer { get; private set; } = new byte[1024];
 
-    internal void SendInputToServer (byte input)
+    internal void SendInputToServer (byte input, float mouse)
     {
-        PlayerInputMessage inputMessage = new PlayerInputMessage(ObjectTick, input);
+        PlayerInputMessage inputMessage = new PlayerInputMessage(ObjectTick, input, mouse);
         NetworkClient.Send<PlayerInputMessage>(inputMessage, Channels.Unreliable);
 
         uint bufferIndex = ObjectTick % 1024;

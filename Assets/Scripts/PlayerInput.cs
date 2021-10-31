@@ -10,24 +10,30 @@ public class ObjectTickState
 }
 
 public class PlayerInput
-{ 
-    public byte currentInput { get; private set; } = 0;
+{
+    public static int MOUSE_SENSIBILITY = 10;
 
-    public void ReceivedInput (byte input)
+    public byte currentInput { get; private set; } = 0;
+    public float currentMouseAngle { get; private set; } = 0f;
+
+    public void ReceivedInput (byte input, float mouse)
     {
         currentInput = input;
+        currentMouseAngle = mouse;
     }
 
     public void ReadInput()
     {
         ReadHorizontalAxis();
         ReadVerticalAxis();
+        ReadMouse();
         ReadSpace();
     }
 
     public void ClearInput()
     {
         currentInput = 0;
+        currentMouseAngle = 0f;
     }
 
     void ReadHorizontalAxis ()
@@ -54,6 +60,11 @@ public class PlayerInput
         {
             currentInput |= 1 << 4;
         }
+    }
+
+    void ReadMouse()
+    {
+        currentMouseAngle = Input.GetAxis("Mouse X") * MOUSE_SENSIBILITY;
     }
 
     void ReadSpace ()

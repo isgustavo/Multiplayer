@@ -51,7 +51,7 @@ public class Player : MonoBehaviour
         if (NetworkIdentity.isLocalPlayer == true)
         {
             PlayerInput.ReadInput();
-            PlayerState.SendInputToServer(PlayerInput.currentInput);
+            PlayerState.SendInputToServer(PlayerInput.currentInput, PlayerInput.currentMouseAngle);
         }
 
         PlayerCharacter.UpdateCharacter();

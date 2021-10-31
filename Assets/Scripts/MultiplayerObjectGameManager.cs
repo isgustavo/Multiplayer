@@ -92,7 +92,7 @@ public class MultiplayerObjectGameManager : MonoBehaviour
             return;
 
         Players[netId].PlayerState.ReceivedTick(message.tick);
-        Players[netId].PlayerInput.ReceivedInput(message.input);
+        Players[netId].PlayerInput.ReceivedInput(message.input, message.mouse);
     }
 
     private void OnPlayerServerStateReceived (PlayerStateMessage message)
