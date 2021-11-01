@@ -10,7 +10,6 @@ public class Player : MonoBehaviour
     public static event Action OnLocalPlayerChanged;
 
     public NetworkIdentity NetworkIdentity { get; private set; }
-
     public ObjectTickState LastSyncObjectReceived = new ObjectTickState();
 
     public PlayerInput PlayerInput { get; private set; } = new PlayerInput();

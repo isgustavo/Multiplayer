@@ -5,9 +5,14 @@ using UnityEngine;
 
 public class UIBillboard : MonoBehaviour
 {
+    private void OnEnable ()
+    {
+        if (Player.LocalPlayer == null)
+            gameObject.SetActive(false);
+    }
 
     void Update()
     {
-        transform.rotation = Quaternion.LookRotation(transform.position - Player.LocalPlayer.CharacterCamera.Cam.transform.position);
+        transform.forward = -Player.LocalPlayer.CharacterCamera.Cam.transform.forward;
     }
 }

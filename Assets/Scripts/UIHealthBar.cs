@@ -18,7 +18,6 @@ public class UIHealthBar : MonoBehaviour
         character = transform.parent.GetComponent<Character>();
         character.OnCurrentHealthChanged += OnCurrentHealthChanged;
 
-        UIConsole.Current.AddConsole($"UIHealhtBart {character == null}");
         fillImage.fillAmount = 1;
     }
 

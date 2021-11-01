@@ -12,7 +12,7 @@ public interface IProjectile
 public class ProjectileLogic : Character, IProjectile
 {
     public static int COLLIDER_LAYER = 1 << 10;
-    NonPlayer projectilePool;
+    NonPlayer nonPlayer;
 
     public SOMultiplayerProjectile ProjectileStats => (SOMultiplayerProjectile)Stats;
 
@@ -22,7 +22,7 @@ public class ProjectileLogic : Character, IProjectile
     {
         base.Awake();
 
-        projectilePool = GetComponent<NonPlayer>();
+        nonPlayer = GetComponent<NonPlayer>();
     }
 
     public override void OnEnable ()
@@ -35,7 +35,7 @@ public class ProjectileLogic : Character, IProjectile
     private void Update ()
     {
         if (currentLifetime > ProjectileStats.Lifetime)
-            TakeDamage(Stats.MaxHealth);
+            TakeDamage(Stats.MaxHealth, nonPlayer.ID);
         else
         {
             currentLifetime += Time.deltaTime;
@@ -47,7 +47,7 @@ public class ProjectileLogic : Character, IProjectile
 
     public void ForceDespawn ()
     {
-        TakeDamage(Stats.MaxHealth);
+        TakeDamage(Stats.MaxHealth, nonPlayer.ID);
     }
 
     public int GetDamage ()
@@ -57,18 +57,18 @@ public class ProjectileLogic : Character, IProjectile
 
     public uint GetOnwerId ()
     {
-        return projectilePool.OwnerID;
+        return nonPlayer.OwnerID;
     }
 
     protected override void SetVisual ()
     {
         base.SetVisual();
 
-        if (Player.LocalPlayer.NetworkIdentity.netId == projectilePool.OwnerID)
+        if (Player.LocalPlayer.NetworkIdentity.netId == nonPlayer.OwnerID)
         {
             characterRenderer.material = MultiplayerObjectGameManager.Current.MultiplayerObjectMaterial.LocalPlayer;
         }
-        else if (MultiplayerObjectGameManager.Current.Players.ContainsKey(projectilePool.OwnerID) == true)
+        else if (MultiplayerObjectGameManager.Current.Players.ContainsKey(nonPlayer.OwnerID) == true)
         {
             characterRenderer.material = MultiplayerObjectGameManager.Current.MultiplayerObjectMaterial.OtherPlayer;
         }
@@ -88,6 +88,6 @@ public class ProjectileLogic : Character, IProjectile
     IEnumerator WaitToDespawn ()
     {
         yield return new WaitForEndOfFrame();
-        MultiplayerGamePoolManager.Current.Despawn(projectilePool);
+        MultiplayerGamePoolManager.Current.Despawn(nonPlayer);
     }
 }

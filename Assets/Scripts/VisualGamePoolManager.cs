@@ -61,9 +61,6 @@ public class VisualGamePoolManager : MonoBehaviour
     {
         if (objects.ContainsKey(objName) == false || objects[objName].Count <= 0)
         {
-            Debug.LogError($"Pool is empty {objName}");
-            UIConsole.Current.AddConsole($"Pool is empty {objName}");
-
             return null;
         }
         else

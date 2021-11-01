@@ -36,10 +36,8 @@ public class UIClientController : MonoBehaviour
 
     private void OnClientStarted ()
     {
-        //Debug.Log("OnClientConnected");
         MultiplayerGameManager.Current.OnClientStarted -= OnClientStarted;
 
-        //Debug.Log($"Player.LocalPlayer {Player.LocalPlayer == null}");
         if (Player.LocalPlayer == null)
             Player.OnLocalPlayerChanged += SetPlayerUI;
         else
@@ -49,7 +47,6 @@ public class UIClientController : MonoBehaviour
 
     public void SetPlayerUI()
     {
-        //Debug.Log($"SetPlayerUI {Player.LocalPlayer == null}");
         Player.LocalPlayer.OnCurrentPointChanged += OnCurrentPointChanged;
         Player.LocalPlayer.PlayerCharacter.OnDeadChanged += OnDeadChanged;
 

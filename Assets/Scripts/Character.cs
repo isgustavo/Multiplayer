@@ -55,41 +55,37 @@ public class Character : MonoBehaviour
             SetVisual();
     }
 
-    public virtual void UpdateCharacter ()
-    {
-        
-    }
+    public virtual void UpdateCharacter () {  }
 
-    public virtual void FixedUpdateCharacter ()
-    {
+    public virtual void FixedUpdateCharacter () {  }
 
-    }
-
-    public virtual void LateUpdateCharacter ()
-    {
-
-    }
+    public virtual void LateUpdateCharacter () {  }
 
     public virtual void OnCollision (Collider collider) { }
 
     public bool IsAlive () => CurrentHealth > 0;
 
-    protected virtual void SetVisual()
-    {
+    protected virtual void SetVisual() { }
 
-    }
-
-    protected virtual void TakeDamage (float damage)
+    protected virtual void TakeDamage (float damage, uint ownerID)
     {
         if (currentHealth <= 0)
             return;
 
         CurrentHealth -= damage;
+
+        TryScore(ownerID);
     }
 
     protected virtual void Dead ()
     {
         CharacterCollision.OnCollision -= OnCollision;
         OnDeadChanged?.Invoke();
+    }
+
+    void TryScore (uint ownerId)
+    {
+        if (MultiplayerObjectGameManager.Current.Players.ContainsKey(ownerId))
+            MultiplayerObjectGameManager.Current.Players[ownerId].AddStore(Stats.HitPoint);
     }
 }

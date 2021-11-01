@@ -9,6 +9,8 @@ public class BotCharacter : Character
     public Bot Owner { get; private set; }
     public StateMachine StateMachine { get; private set; }
 
+    public CharacterAwareness awareness { get; private set; }
+
     Transform currentTarget;
     public Transform CurrentTarget
     {
@@ -23,7 +25,6 @@ public class BotCharacter : Character
         }
     }
 
-    public CharacterAwareness awareness { get; private set; }
     public event Action OnCurrentTargetChanged;
 
     public CharacterWeapon CurrentWeapon { get; private set; }
@@ -66,21 +67,6 @@ public class BotCharacter : Character
         awareness.OnClosestTriggerExit += OnClosestTriggerExit;
     }
 
-    private void OnDisable ()
-    {
-
-        if (NetworkServer.active == false)
-            return;
-
-        currentTarget = null;
-
-        awareness.OnAwernessTriggerEnter -= OnAwernessTriggerEnter;
-        awareness.OnAwernessTriggerExit -= OnAwernessTriggerExit;
-
-        awareness.OnClosestTriggerEnter -= OnClosestTriggerEnter;
-        awareness.OnClosestTriggerExit -= OnClosestTriggerExit;
-    }
-
     public override void UpdateCharacter ()
     {
         StateMachine.UpdateState();
@@ -96,6 +82,21 @@ public class BotCharacter : Character
         StateMachine.LateUpdateState();
     }
 
+    private void OnDisable ()
+    {
+
+        if (NetworkServer.active == false)
+            return;
+
+        currentTarget = null;
+
+        awareness.OnAwernessTriggerEnter -= OnAwernessTriggerEnter;
+        awareness.OnAwernessTriggerExit -= OnAwernessTriggerExit;
+
+        awareness.OnClosestTriggerEnter -= OnClosestTriggerEnter;
+        awareness.OnClosestTriggerExit -= OnClosestTriggerExit;
+    }
+
     public override void OnCollision (Collider collider)
     {
         base.OnCollision(collider);
@@ -104,27 +105,21 @@ public class BotCharacter : Character
         if (projectile == null)
             return;
 
-        TryScore(projectile.GetOnwerId());
-
         if (NetworkServer.active == true)
         {
-            TakeDamage(projectile.GetDamage());
+            TakeDamage(projectile.GetDamage(), projectile.GetOnwerId());
 
             projectile.ForceDespawn();
+        } else
+        {
+            GameObject obj = VisualGamePoolManager.Current.Spawn("BotDamage");
+            if (obj == null)
+                return;
+
+            obj.transform.position = transform.position;
+            obj.transform.rotation = Quaternion.FromToRotation(Vector3.forward, collider.transform.forward);
+            obj.SetActive(true);
         }
-    }
-
-    protected override void Dead ()
-    {
-        base.Dead();
-
-        StartCoroutine(WaitToDespawn());
-    }
-
-    IEnumerator WaitToDespawn()
-    {
-        yield return new WaitForEndOfFrame();
-        MultiplayerGamePoolManager.Current.Despawn(Owner);
     }
 
     private void OnClosestTriggerEnter (Collider collider)
@@ -178,6 +173,19 @@ public class BotCharacter : Character
         StateMachine.ChangeState(nameof(BotChaseState));
     }
 
+    protected override void Dead ()
+    {
+        base.Dead();
+
+        StartCoroutine(WaitToDespawn());
+    }
+
+    IEnumerator WaitToDespawn ()
+    {
+        yield return new WaitForEndOfFrame();
+        MultiplayerGamePoolManager.Current.Despawn(Owner);
+    }
+
     public void SetTarget(Transform target)
     {
         CurrentTarget = target;
@@ -188,21 +196,6 @@ public class BotCharacter : Character
         return CurrentTarget;
     }
 
-    public Transform GetTransform ()
-    {
-        return gameObject.transform;
-    }
-
-    public float GetHealth ()
-    {
-        return CurrentHealth;
-    }
-
-    public void SetHealth (float health)
-    {
-        CurrentHealth = health;
-    }
-
     protected override void SetVisual ()
     {
         base.SetVisual();
@@ -210,9 +203,4 @@ public class BotCharacter : Character
         characterRenderer.material = MultiplayerObjectGameManager.Current.MultiplayerObjectMaterial.BotPlayer;
     }
 
-    void TryScore (uint ownerId)
-    {
-        if (MultiplayerObjectGameManager.Current.Players.ContainsKey(ownerId))
-            MultiplayerObjectGameManager.Current.Players[ownerId].AddStore(Stats.HitPoint);
-    }
 }

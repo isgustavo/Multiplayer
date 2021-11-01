@@ -32,8 +32,6 @@ public class BotShootingState : BotCharacterState
         {
             foreach (Transform spawnPoint in Context.CurrentWeapon.spawnPoints)
             {
-                //UIConsole.Current.AddConsole($"Context.currentWeapon.Stats.cooldown {spawnPoint.position}");
-                //UIConsole.Current.AddConsole($"Context.currentWeapon.Stats.cooldown {spawnPoint.forward}");
                 SpawnProjectile(spawnPoint.position, spawnPoint.forward);
             }
         }
@@ -65,8 +63,11 @@ public class BotShootingState : BotCharacterState
 
     void SpawnProjectile (Vector3 position, Vector3 forward)
     {
-        //UIConsole.Current.AddConsole($"SpawnProjectile");
         MultiplayerPoolID obj = MultiplayerGamePoolManager.Current.SpawnOnServer("PistolProjectile");
+
+        if (obj == null)
+            return;
+
         obj.OwnerID = Context.Owner.ID;
         obj.transform.position = position;
         obj.transform.forward = forward;

@@ -14,7 +14,6 @@ public class MultiplayerSpawnerManager : MonoBehaviour
 
     public  virtual void Awake ()
     {
-        UIConsole.Current.AddConsole($"Debug.Log{ tagName}");
         spawnPoints = GameObject.FindGameObjectsWithTag(tagName);
     }
 
@@ -38,7 +37,7 @@ public class MultiplayerSpawnerManager : MonoBehaviour
         {
             yield return new WaitForSeconds(2f);
 
-            if (objects.Keys.Count < 5)
+            if (objects.Keys.Count < 4)
             {
                 SpawnObject(GetRandomPoint(MultiplayerGamePoolManager.POOL_POSITION));
             }
@@ -51,8 +50,10 @@ public class MultiplayerSpawnerManager : MonoBehaviour
 
     protected virtual void SpawnObject (Vector3 startPosition)
     {
-        UIConsole.Current.AddConsole($"Debug.Log{ tagName}");
         MultiplayerPoolID obj = MultiplayerGamePoolManager.Current.SpawnOnServer(objectName);
+        if (obj == null)
+            return;
+
         obj.transform.position = startPosition;
         obj.transform.rotation = Quaternion.identity;
 

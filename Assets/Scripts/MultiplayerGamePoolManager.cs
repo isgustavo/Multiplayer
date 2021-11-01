@@ -102,8 +102,6 @@ public class MultiplayerGamePoolManager : MonoBehaviour
         if (serverObjects.ContainsKey(objName) == false || serverObjects[objName].Count <= 0)
         {
             Debug.LogError($"Pool is empty {objName}");
-           //UIConsole.Current.AddConsole($"Pool is empty {objName}");
-
             return null;
         }
         else
@@ -117,7 +115,6 @@ public class MultiplayerGamePoolManager : MonoBehaviour
         if (clientObjects.ContainsKey(objId) == false)
         {
             Debug.LogError($"Pool is empty {objId}");
-            //UIConsole.Current.AddConsole($"Pool is empty {objId}");
             return null;
         }
         else
@@ -128,7 +125,6 @@ public class MultiplayerGamePoolManager : MonoBehaviour
 
     public void Despawn (NonPlayer obj)
     {
-        //UIConsole.Current.AddConsole($"Despawn {obj.ID}");
         obj.transform.SetParent(null);
         obj.gameObject.SetActive(false);
 

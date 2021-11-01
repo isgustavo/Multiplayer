@@ -21,11 +21,9 @@ public class BoxCharacter : Character
         if (projectile == null)
             return;
 
-        TryScore(projectile.GetOnwerId());
-
         if (NetworkServer.active == true)
         {
-            TakeDamage(projectile.GetDamage());
+            TakeDamage(projectile.GetDamage(), projectile.GetOnwerId());
 
             projectile.ForceDespawn();
         }
@@ -47,12 +45,6 @@ public class BoxCharacter : Character
     {
         yield return new WaitForEndOfFrame();
         MultiplayerGamePoolManager.Current.Despawn(Owner);
-    }
-
-    void TryScore (uint ownerId)
-    {
-        if (MultiplayerObjectGameManager.Current.Players.ContainsKey(ownerId))
-            MultiplayerObjectGameManager.Current.Players[ownerId].AddStore(Stats.HitPoint);
     }
 
     //void SpawnNewWeapon()
