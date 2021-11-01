@@ -10,6 +10,8 @@ public class UIClientController : MonoBehaviour
     TMP_Text playerText;
     TMP_Text scoreText;
 
+    TMP_Text finalScoreText;
+
     private void Awake ()
     {
         inGameGroup = transform.Find("UIGroup");
@@ -18,6 +20,7 @@ public class UIClientController : MonoBehaviour
         scoreText = inGameGroup.Find("ScoreValue").GetComponent<TMP_Text>();
 
         inDeadGroup = transform.Find("UIDead");
+        finalScoreText = inDeadGroup.Find("ScoreValue").GetComponent<TMP_Text>();
     }
 
     public void Start ()
@@ -31,7 +34,7 @@ public class UIClientController : MonoBehaviour
             return;
 
         Player.LocalPlayer.OnCurrentPointChanged -= OnCurrentPointChanged;
-        Player.LocalPlayer.PlayerCharacter.OnDeadChanged -= OnDeadChanged;
+        Player.LocalPlayer.PlayerCharacter.OnDeadEvent -= OnDeadChanged;
     }
 
     private void OnClientStarted ()
@@ -48,7 +51,7 @@ public class UIClientController : MonoBehaviour
     public void SetPlayerUI()
     {
         Player.LocalPlayer.OnCurrentPointChanged += OnCurrentPointChanged;
-        Player.LocalPlayer.PlayerCharacter.OnDeadChanged += OnDeadChanged;
+        Player.LocalPlayer.PlayerCharacter.OnDeadEvent += OnDeadChanged;
 
         playerText.text = $"Player{Player.LocalPlayer.NetworkIdentity.netId.ToString("00")}";
         scoreText.text = "00";
@@ -65,5 +68,6 @@ public class UIClientController : MonoBehaviour
     {
         inGameGroup.gameObject.SetActive(false);
         inDeadGroup.gameObject.SetActive(true);
+        finalScoreText.text = scoreText.text;
     }
 }

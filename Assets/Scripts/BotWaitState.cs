@@ -2,7 +2,7 @@
 
 public class BotWaitState : BotCharacterState
 {
-    float waitToPatrolTime = 5f;
+    float waitToPatrolTime = 2.5f;
     float currentTimeOnPoint;
 
     public BotWaitState (Transform transform) : base(transform)

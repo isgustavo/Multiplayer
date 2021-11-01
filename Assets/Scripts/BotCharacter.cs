@@ -11,8 +11,8 @@ public class BotCharacter : Character
 
     public CharacterAwareness awareness { get; private set; }
 
-    Transform currentTarget;
-    public Transform CurrentTarget
+    Player currentTarget;
+    public Player CurrentTarget
     {
         get
         {
@@ -88,7 +88,7 @@ public class BotCharacter : Character
         if (NetworkServer.active == false)
             return;
 
-        currentTarget = null;
+        RemoveTarget();
 
         awareness.OnAwernessTriggerEnter -= OnAwernessTriggerEnter;
         awareness.OnAwernessTriggerExit -= OnAwernessTriggerExit;
@@ -127,51 +127,67 @@ public class BotCharacter : Character
         if (1 << collider.gameObject.layer != Player.COLLIDER_LAYER)
             return;
 
-        SetTarget(collider.transform);
+        if (TrySetTarget(collider.transform) == false)
+        {
+            return;
+        }
 
-       StateMachine.ChangeState(nameof(BotShootingState));
+        StateMachine.ChangeState(nameof(BotShootingState));
     }
 
     private void OnClosestTriggerExit (Collider collider)
     {
-        if (currentTarget == null)
+        if (CurrentTarget == null)
             return;
 
         if (1 << collider.gameObject.layer != Player.COLLIDER_LAYER)
             return;
 
-        if (currentTarget.GetInstanceID() != collider.transform.GetInstanceID())
+        Player player = collider.GetComponentInParent<Player>();
+        if (player == null)
             return;
 
-       StateMachine.ChangeState(nameof(BotChaseState));
-    }
-
-    private void OnAwernessTriggerExit (Collider collider)
-    {
-        if (currentTarget == null)
+        if (CurrentTarget.GetInstanceID() != player.GetInstanceID())
             return;
 
-        if (1 << collider.gameObject.layer != Player.COLLIDER_LAYER)
-            return;
-
-        if (currentTarget.GetInstanceID() != collider.transform.GetInstanceID())
-            return;
-
-        CurrentTarget = null;
-        StateMachine.ChangeState(nameof(BotPatrolMoveState));
+        StateMachine.ChangeState(nameof(BotChaseState));
     }
 
     private void OnAwernessTriggerEnter (Collider collider)
     {
-        if (currentTarget != null)
+        if (CurrentTarget != null)
             return;
 
         if (1 << collider.gameObject.layer != Player.COLLIDER_LAYER)
             return;
 
-        SetTarget(collider.transform);
+        if(TrySetTarget(collider.transform) == false)
+        {
+            return;
+        }
+
         StateMachine.ChangeState(nameof(BotChaseState));
     }
+    private void OnAwernessTriggerExit (Collider collider)
+    {
+        if (CurrentTarget == null)
+            return;
+
+        if (1 << collider.gameObject.layer != Player.COLLIDER_LAYER)
+            return;
+
+        Player player = collider.GetComponentInParent<Player>();
+        if (player == null)
+            return;
+
+        if (CurrentTarget.GetInstanceID() != player.GetInstanceID())
+            return;
+
+        RemoveTarget();
+
+        StateMachine.ChangeState(nameof(BotPatrolMoveState));
+    }
+
 
     protected override void Dead ()
     {
@@ -186,12 +202,41 @@ public class BotCharacter : Character
         MultiplayerGamePoolManager.Current.Despawn(Owner);
     }
 
-    public void SetTarget(Transform target)
+    public bool TrySetTarget(Transform collider)
     {
-        CurrentTarget = target;
+        Player player = collider.GetComponentInParent<Player>();
+        if (player == null)
+            return false;
+
+        if (player.PlayerCharacter.IsAlive() == false)
+            return false;
+
+        if(CurrentTarget != null)
+            CurrentTarget.PlayerCharacter.OnDeadEvent -= OnTargetDeadEvent;
+
+        CurrentTarget = player;
+        CurrentTarget.PlayerCharacter.OnDeadEvent += OnTargetDeadEvent;
+
+        return true;
     }
 
-    public Transform GetTarget()
+    void RemoveTarget()
+    {
+        if (CurrentTarget != null)
+            CurrentTarget.PlayerCharacter.OnDeadEvent -= OnTargetDeadEvent;
+
+        CurrentTarget = null;
+    }
+
+    void OnTargetDeadEvent()
+    {
+        CurrentTarget.PlayerCharacter.OnDeadEvent -= OnTargetDeadEvent;
+        CurrentTarget = null;
+
+        StateMachine.ChangeState(nameof(BotPatrolMoveState));
+    }
+
+    public Player GetTarget()
     {
         return CurrentTarget;
     }

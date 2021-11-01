@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class BotShootingState : BotCharacterState
 {
-    Transform target;
+    Player target;
 
     float currentCooldown = 1f;
 
@@ -24,7 +24,7 @@ public class BotShootingState : BotCharacterState
     {
         base.UpdateState();
 
-        Vector3 direction = (target.position - Context.Visual.position).normalized;
+        Vector3 direction = (target.Visual.position - Context.Visual.position).normalized;
         Quaternion toRotate = Quaternion.LookRotation(new Vector3(direction.x, 0f, direction.z), Vector3.up);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotate, 360f * Time.deltaTime);
 
@@ -45,6 +45,9 @@ public class BotShootingState : BotCharacterState
 
     private void SetCurrentTarget ()
     {
+        if (Context.GetTarget() == null)
+            return;
+
         target = Context.GetTarget();
     }
 

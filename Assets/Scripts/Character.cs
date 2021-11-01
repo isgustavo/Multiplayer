@@ -33,7 +33,7 @@ public class Character : MonoBehaviour
     }
 
     public event Action OnCurrentHealthChanged;
-    public event Action OnDeadChanged;
+    public event Action OnDeadEvent;
 
     public CharacterCollision CharacterCollision { get; private set; }
 
@@ -80,7 +80,7 @@ public class Character : MonoBehaviour
     protected virtual void Dead ()
     {
         CharacterCollision.OnCollision -= OnCollision;
-        OnDeadChanged?.Invoke();
+        OnDeadEvent?.Invoke();
     }
 
     void TryScore (uint ownerId)
