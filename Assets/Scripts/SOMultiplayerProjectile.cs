@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "Projectile", menuName = "Multiplayer/MultiplayerProjectile", order = 1)]
-public class SOMultiplayerProjectile : ScriptableObject
+public class SOMultiplayerProjectile : SOMultiplayerCharacter
 {
-    public float Speed = 5;
+    //public float MoveSpeed;
     public int Lifetime = 5;
     public int Damage = 1;
 }

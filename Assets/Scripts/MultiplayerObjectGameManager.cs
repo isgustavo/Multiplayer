@@ -10,10 +10,13 @@ public class GameStateGroupMessage
     public List<ObjectStateMessage> objectStateMessage = new List<ObjectStateMessage>();
 }
 
-
 public class MultiplayerObjectGameManager : MonoBehaviour
 {
     public static MultiplayerObjectGameManager Current;
+
+    [SerializeField]
+    SOMultiplayerObjectMaterial multiplayerObjectMaterial;
+    public SOMultiplayerObjectMaterial MultiplayerObjectMaterial => multiplayerObjectMaterial;
 
     bool isServerConnected = false;
     public Dictionary<uint, Player> Players { get; private set; } = new Dictionary<uint, Player>();
@@ -101,6 +104,9 @@ public class MultiplayerObjectGameManager : MonoBehaviour
         if(Players.ContainsKey(netId) == false)
             return;
         
+        Players[netId].PlayerCharacter.CurrentHealth = message.health;
+        Players[netId].CurrentPoints = message.points;
+
         Players[netId].LastSyncObjectReceived.tick = message.tick;
         Players[netId].LastSyncObjectReceived.position = message.position;
         Players[netId].LastSyncObjectReceived.rotation = message.rotation;
@@ -111,6 +117,9 @@ public class MultiplayerObjectGameManager : MonoBehaviour
         uint netId = message.netId;
         if (objects.ContainsKey(netId) == false)
         {
+            if (message.health <= 0)
+                return;
+
             NonPlayer multiplayerPoolObject = MultiplayerGamePoolManager.Current.SpawnOnClient(netId);
             if (multiplayerPoolObject == null)
             {
@@ -122,7 +131,7 @@ public class MultiplayerObjectGameManager : MonoBehaviour
             objects.Add(netId, multiplayerPoolObject);
         }
 
-        objects[netId].characterLogic.SetLife(message.life);
+        objects[netId].Character.CurrentHealth = message.health;
         objects[netId].LastObjectStateReceived.tick = message.tick;
         objects[netId].LastObjectStateReceived.position = message.position;
         objects[netId].LastObjectStateReceived.rotation = message.rotation;
@@ -132,13 +141,13 @@ public class MultiplayerObjectGameManager : MonoBehaviour
     {
         foreach (Player player in Players.Values)
         {
-            PlayerStateMessage playerStateMessage = new PlayerStateMessage(player.PlayerState.ObjectTick, player.Visual.position, player.Visual.rotation, player.NetworkIdentity.netId);
+            PlayerStateMessage playerStateMessage = new PlayerStateMessage(player.PlayerState.ObjectTick, player.Visual.position, player.Visual.rotation, player.NetworkIdentity.netId, player.PlayerCharacter.CurrentHealth, player.currentPoints);
             NetworkServer.SendToAll<PlayerStateMessage>(playerStateMessage, Channels.Unreliable, true);
         }
 
         foreach (NonPlayer obj in objects.Values)
         {
-            ObjectStateMessage objectStateMessage = new ObjectStateMessage(obj.ObjectState.ObjectTick, obj.characterLogic.GetTransform().position, obj.characterLogic.GetTransform().rotation, obj.ID, obj.OwnerID, obj.characterLogic.GetLife());
+            ObjectStateMessage objectStateMessage = new ObjectStateMessage(obj.ObjectState.ObjectTick, obj.Character.Visual.position, obj.Character.Visual.rotation, obj.ID, obj.OwnerID, obj.Character.CurrentHealth);
             NetworkServer.SendToAll<ObjectStateMessage>(objectStateMessage, Channels.Unreliable, true);
         }
     }

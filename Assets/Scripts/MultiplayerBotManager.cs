@@ -1,87 +1,100 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
-using System.Collections;
-
-public class MultiplayerBotManager : MonoBehaviour
+﻿public class MultiplayerBotManager : MultiplayerSpawnerManager
 {
     public static MultiplayerBotManager Current;
 
-    Dictionary<uint, Bot> bots = new Dictionary<uint, Bot>();
+    public override string tagName => "BotSpawnPoint";
+    public override string objectName => "Bot";
 
-    GameObject[] botSpawnPoints;
+    //public static MultiplayerBotManager Current;
 
-    private void Awake ()
+    //Dictionary<uint, Bot> bots = new Dictionary<uint, Bot>();
+
+    //GameObject[] botSpawnPoints;
+
+    public override void Awake ()
     {
         if (Current == null)
             Current = this;
         else
             Destroy(this);
 
-        botSpawnPoints = GameObject.FindGameObjectsWithTag("BotSpawnPoint");
+        base.Awake();
+        //botSpawnPoints = GameObject.FindGameObjectsWithTag("BotSpawnPoint");
     }
 
-    private void Start ()
-    {
-        MultiplayerGameManager.Current.OnClientConnected += OnClientConnected;
-    }
+    //private void Start ()
+    //{
+    //    MultiplayerGameManager.Current.OnClientConnected += OnClientConnected;
+    //}
 
-    private void OnClientConnected ()
-    {
-        MultiplayerGameManager.Current.OnClientConnected -= OnClientConnected;
+    //Coroutine spawnBotsCoroutine; 
 
-        StartCoroutine(SpawnBotsDelay());
-    }
+    //private void OnClientConnected ()
+    //{
+    //    MultiplayerGameManager.Current.OnClientConnected -= OnClientConnected;
 
-    IEnumerator SpawnBotsDelay()
-    {
-        while(true)
-        {
-            if(bots.Keys.Count < 5)
-            {
-                SpawnBot(GetPatrolPoint(MultiplayerGamePoolManager.POOL_POSITION));
-            }
-            yield return new WaitForSeconds(2f);
-        }
-    }
+    //    spawnBotsCoroutine = StartCoroutine(SpawnBotsDelay());
+    //}
 
-    void SpawnBot (Vector3 startPosition)
-    {
-        UIConsole.Current.AddConsole($"SpawnBot");
-        MultiplayerPoolID obj = MultiplayerGamePoolManager.Current.SpawnOnServer("Bot");
-        obj.transform.position = startPosition;
-        obj.transform.rotation = Quaternion.identity;
+    //IEnumerator SpawnBotsDelay()
+    //{
+    //    while(true)
+    //    {
+    //        yield return new WaitForSeconds(2f);
 
-        obj.gameObject.SetActive(true);
-    }
+    //        if (bots.Keys.Count < 5)
+    //        {
+    //            SpawnBot(GetPatrolPoint(MultiplayerGamePoolManager.POOL_POSITION));
+    //        } else
+    //        {
+    //            break;
+    //        }
+    //    }
+    //}
 
-    public Vector3 GetPatrolPoint(Vector3 currentPoint)
-    {
-        Vector3 nextPoint = botSpawnPoints[UnityEngine.Random.Range(0, botSpawnPoints.Length - 1)].transform.position;
+    //void SpawnBot (Vector3 startPosition)
+    //{
+    //    UIConsole.Current.AddConsole($"SpawnBot");
+    //    MultiplayerPoolID obj = MultiplayerGamePoolManager.Current.SpawnOnServer("Bot");
+    //    obj.transform.position = startPosition;
+    //    obj.transform.rotation = Quaternion.identity;
 
-        Vector3 positionDiference = currentPoint - nextPoint;
-        if (positionDiference.sqrMagnitude > 1)
-        {
-            return nextPoint;
-        }
-        else
-        {
-            return GetPatrolPoint(currentPoint);
-        }
-    }
+    //    obj.gameObject.SetActive(true);
+    //}
 
-    public void AddBot(Bot bot)
-    {
-        if (bots.ContainsKey(bot.ID) == true)
-            return;
+    //public Vector3 GetPatrolPoint(Vector3 currentPoint)
+    //{
+    //    Vector3 nextPoint = botSpawnPoints[UnityEngine.Random.Range(0, botSpawnPoints.Length - 1)].transform.position;
 
-        bots.Add(bot.ID, bot);
-    }
+    //    Vector3 positionDiference = currentPoint - nextPoint;
+    //    if (positionDiference.sqrMagnitude > 1)
+    //    {
+    //        return nextPoint;
+    //    }
+    //    else
+    //    {
+    //        return GetPatrolPoint(currentPoint);
+    //    }
+    //}
 
-    public void RemoveBot(uint id)
-    {
-        if (bots.ContainsKey(id) == false)
-            return;
+    //public void AddBot(Bot bot)
+    //{
+    //    if (bots.ContainsKey(bot.ID) == true)
+    //        return;
 
-        bots.Remove(id);
-    }
+    //    bots.Add(bot.ID, bot);
+    //}
+
+    //public void RemoveBot(uint id)
+    //{
+    //    if (bots.ContainsKey(id) == false)
+    //        return;
+
+    //    if(spawnBotsCoroutine != null)
+    //        StopCoroutine(spawnBotsCoroutine);
+
+    //    bots.Remove(id);
+
+    //    spawnBotsCoroutine = StartCoroutine(SpawnBotsDelay());
+    //}
 }

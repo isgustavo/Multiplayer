@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MoveSpeed: 4
   RotateSpeed: 360
-  MaxLive: 5
+  MaxHealth: 5
+  HitPoint: 2

@@ -4,7 +4,6 @@ using TMPro;
 using Mirror;
 using System;
 
-
 public class UIServerController : MonoBehaviour
 {
     Transform group;
@@ -13,6 +12,7 @@ public class UIServerController : MonoBehaviour
     TMP_InputField packageLossText;
 
     Button changeValuesButton;
+
     private void Awake ()
     {
         group = transform.Find("UIServerGroup");
@@ -34,6 +34,7 @@ public class UIServerController : MonoBehaviour
     private void OnServerConnected ()
     {
         MultiplayerGameManager.Current.OnServerConnected -= OnServerConnected;
+
         latencyText.text = MultiplayerSimulationGameManager.Current.Simulation.LatencyInSecond.ToString();
         packageLossText.text = MultiplayerSimulationGameManager.Current.Simulation.PackageLoss.ToString();
 

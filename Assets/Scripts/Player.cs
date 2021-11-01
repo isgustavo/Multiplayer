@@ -7,10 +7,12 @@ public class Player : MonoBehaviour
     public static int COLLIDER_LAYER = 1 << 9;
 
     public static Player LocalPlayer;
+    public static event Action OnLocalPlayerChanged;
 
     public NetworkIdentity NetworkIdentity { get; private set; }
 
     public ObjectTickState LastSyncObjectReceived = new ObjectTickState();
+
     public PlayerInput PlayerInput { get; private set; } = new PlayerInput();
     public PlayerState PlayerState { get; private set; } = new PlayerState();
 
@@ -18,6 +20,22 @@ public class Player : MonoBehaviour
     public  CharacterCamera CharacterCamera { get; private set; }
 
     public Transform Visual => PlayerCharacter.Visual;
+
+    public int currentPoints;
+    public int CurrentPoints
+    {
+        get
+        {
+            return currentPoints;
+        }
+        set
+        {
+            currentPoints = value;
+            OnCurrentPointChanged?.Invoke();
+        }
+    }
+
+    public event Action OnCurrentPointChanged;
 
     public virtual void Awake ()
     {
@@ -44,6 +62,7 @@ public class Player : MonoBehaviour
         CharacterCamera.StartCamera();
 
         LocalPlayer = this;
+        OnLocalPlayerChanged?.Invoke();
     }
 
     private void Update ()
@@ -51,7 +70,7 @@ public class Player : MonoBehaviour
         if (NetworkIdentity.isLocalPlayer == true)
         {
             PlayerInput.ReadInput();
-            PlayerState.SendInputToServer(PlayerInput.currentInput, PlayerInput.currentMouseAngle);
+            PlayerState.SendInputToServer(PlayerInput.currentInput, PlayerInput.currentMouse);
         }
 
         PlayerCharacter.UpdateCharacter();
@@ -60,4 +79,9 @@ public class Player : MonoBehaviour
     }
 
     public bool IsLocalPlayer => NetworkIdentity.isLocalPlayer;
+
+    public void AddStore(int point)
+    {
+        currentPoints += point;
+    }
 }

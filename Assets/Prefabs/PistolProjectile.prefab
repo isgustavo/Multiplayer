@@ -94,6 +94,7 @@ GameObject:
   - component: {fileID: -2221834262220058380}
   - component: {fileID: -2818858845294551715}
   - component: {fileID: 7069596095216393599}
+  - component: {fileID: 306165706604405170}
   m_Layer: 10
   m_Name: PistolProjectile
   m_TagString: Untagged
@@ -142,7 +143,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1efc6bbe79a785c438226b59deb88284, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  projectileStats: {fileID: 11400000, guid: 5ce488526c1cc534bac66abc54c20e28, type: 2}
+  stats: {fileID: 11400000, guid: 5ce488526c1cc534bac66abc54c20e28, type: 2}
 --- !u!135 &7069596095216393599
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -156,3 +157,18 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.25
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &306165706604405170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3676963324883374037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5178d8214537dbf4b8c62629e9360cf4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  layerMaskCollision:
+    serializedVersion: 2
+    m_Bits: 0

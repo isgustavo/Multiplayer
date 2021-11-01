@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
-public class BotCharacter : Character, ICharacterLogic
+public class BotCharacter : Character
 {
     public Bot Owner { get; private set; }
     public StateMachine StateMachine { get; private set; }
@@ -25,6 +25,8 @@ public class BotCharacter : Character, ICharacterLogic
 
     public CharacterAwareness awareness { get; private set; }
     public event Action OnCurrentTargetChanged;
+
+    public CharacterWeapon CurrentWeapon { get; private set; }
 
     public override void Awake ()
     {
@@ -47,6 +49,7 @@ public class BotCharacter : Character, ICharacterLogic
 
         awareness = GetComponent<CharacterAwareness>();
 
+        CurrentWeapon = GetComponentInChildren<CharacterWeapon>();
     }
 
     public override void OnEnable ()
@@ -68,6 +71,7 @@ public class BotCharacter : Character, ICharacterLogic
 
         if (NetworkServer.active == false)
             return;
+
         currentTarget = null;
 
         awareness.OnAwernessTriggerEnter -= OnAwernessTriggerEnter;
@@ -100,26 +104,13 @@ public class BotCharacter : Character, ICharacterLogic
         if (projectile == null)
             return;
 
-        projectile.ForceDespawn();
+        TryScore(projectile.GetOnwerId());
 
         if (NetworkServer.active == true)
         {
             TakeDamage(projectile.GetDamage());
-        } else
-        {
-            if (MultiplayerObjectGameManager.Current.Players.ContainsKey(projectile.GetOnwerId()) == false)
-            {
-                return;
-            }
 
-            GameObject damageVFX = VisualGamePoolManager.Current.Spawn("BotDamage");
-
-            if (damageVFX == null)
-                return;
-
-            damageVFX.transform.position = transform.position;
-            damageVFX.transform.rotation = Quaternion.FromToRotation(Vector3.forward, collider.transform.forward);
-            damageVFX.SetActive(true);
+            projectile.ForceDespawn();
         }
     }
 
@@ -129,7 +120,6 @@ public class BotCharacter : Character, ICharacterLogic
 
         StartCoroutine(WaitToDespawn());
     }
-
 
     IEnumerator WaitToDespawn()
     {
@@ -203,13 +193,26 @@ public class BotCharacter : Character, ICharacterLogic
         return gameObject.transform;
     }
 
-    public int GetLife ()
+    public float GetHealth ()
     {
-        return CurrentLife;
+        return CurrentHealth;
     }
 
-    public void SetLife (int life)
+    public void SetHealth (float health)
     {
-        CurrentLife = life;
+        CurrentHealth = health;
+    }
+
+    protected override void SetVisual ()
+    {
+        base.SetVisual();
+
+        characterRenderer.material = MultiplayerObjectGameManager.Current.MultiplayerObjectMaterial.BotPlayer;
+    }
+
+    void TryScore (uint ownerId)
+    {
+        if (MultiplayerObjectGameManager.Current.Players.ContainsKey(ownerId))
+            MultiplayerObjectGameManager.Current.Players[ownerId].AddStore(Stats.HitPoint);
     }
 }

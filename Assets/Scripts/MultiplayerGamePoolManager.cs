@@ -38,9 +38,7 @@ public class MultiplayerGamePoolManager : MonoBehaviour
     {
         MultiplayerGameManager.Current.OnServerConnected += OnServerConnected;
         MultiplayerGameManager.Current.OnClientStarted += OnClientStarted;
-
-        UIConsole.Current.AddConsole($"NetworkServer.active {NetworkServer.active}");
-        
+   
     }
 
     private void OnClientStarted ()

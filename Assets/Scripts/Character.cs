@@ -1,32 +1,39 @@
+using System;
+using Mirror;
 using UnityEngine;
-
 
 public class Character : MonoBehaviour
 {
     [SerializeField]
     private SOMultiplayerCharacter stats;
     public SOMultiplayerCharacter Stats => stats;
-    
-    int currentLife;
-    public int CurrentLife
+
+    protected Renderer characterRenderer;
+
+    float currentHealth;
+    public float CurrentHealth
     {
         get
         {
-            return currentLife;
+            return currentHealth;
         }
         set
         {
-            if (currentLife == value)
+            if (currentHealth == value)
                 return;
 
-            currentLife = value;
+            currentHealth = value;
+            OnCurrentHealthChanged?.Invoke();
 
-            if (currentLife <= 0)
+            if (currentHealth <= 0)
             {
                 Dead();
             }
         }
     }
+
+    public event Action OnCurrentHealthChanged;
+    public event Action OnDeadChanged;
 
     public CharacterCollision CharacterCollision { get; private set; }
 
@@ -34,13 +41,18 @@ public class Character : MonoBehaviour
 
     public virtual void Awake ()
     {
+        characterRenderer = GetComponentInChildren<Renderer>();
+
         CharacterCollision = GetComponent<CharacterCollision>();
-        CharacterCollision.OnCollision += OnCollision;
     }
 
     public virtual void OnEnable ()
     {
-        CurrentLife = stats.MaxLive;
+        CurrentHealth = stats.MaxHealth;
+        CharacterCollision.OnCollision += OnCollision;
+
+        if(NetworkServer.active == false)
+            SetVisual();
     }
 
     public virtual void UpdateCharacter ()
@@ -60,15 +72,24 @@ public class Character : MonoBehaviour
 
     public virtual void OnCollision (Collider collider) { }
 
-    public bool IsAlive () => CurrentLife > 0;
+    public bool IsAlive () => CurrentHealth > 0;
 
-    protected virtual void TakeDamage (int damage)
+    protected virtual void SetVisual()
     {
-        CurrentLife -= damage;
+
+    }
+
+    protected virtual void TakeDamage (float damage)
+    {
+        if (currentHealth <= 0)
+            return;
+
+        CurrentHealth -= damage;
     }
 
     protected virtual void Dead ()
     {
-
+        CharacterCollision.OnCollision -= OnCollision;
+        OnDeadChanged?.Invoke();
     }
 }

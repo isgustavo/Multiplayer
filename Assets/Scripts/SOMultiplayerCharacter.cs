@@ -5,5 +5,6 @@ public class SOMultiplayerCharacter : ScriptableObject
 {
     public float MoveSpeed = 5;
     public float RotateSpeed = 5;
-    public int MaxLive = 5;
+    public float MaxHealth = 5;
+    public int HitPoint = 1;
 }

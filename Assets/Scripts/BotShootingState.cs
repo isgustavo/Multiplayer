@@ -5,11 +5,7 @@ public class BotShootingState : BotCharacterState
 {
     Transform target;
 
-    float cooldown = 1f;
     float currentCooldown = 1f;
-
-    float offsetForward = 2f;
-    float offsetUp = 1.6f;
 
     public BotShootingState (Transform transform) : base(transform)
     {
@@ -34,7 +30,12 @@ public class BotShootingState : BotCharacterState
 
         if (TryShoot())
         {
-            SpawnProjectile();
+            foreach (Transform spawnPoint in Context.CurrentWeapon.spawnPoints)
+            {
+                //UIConsole.Current.AddConsole($"Context.currentWeapon.Stats.cooldown {spawnPoint.position}");
+                //UIConsole.Current.AddConsole($"Context.currentWeapon.Stats.cooldown {spawnPoint.forward}");
+                SpawnProjectile(spawnPoint.position, spawnPoint.forward);
+            }
         }
     }
 
@@ -51,7 +52,7 @@ public class BotShootingState : BotCharacterState
 
     bool TryShoot ()
     {
-        if (currentCooldown < cooldown)
+        if (currentCooldown < Context.CurrentWeapon.Stats.cooldown)
         {
             currentCooldown += Time.deltaTime;
             return false;
@@ -62,13 +63,13 @@ public class BotShootingState : BotCharacterState
     }
 
 
-    void SpawnProjectile ()
+    void SpawnProjectile (Vector3 position, Vector3 forward)
     {
         //UIConsole.Current.AddConsole($"SpawnProjectile");
         MultiplayerPoolID obj = MultiplayerGamePoolManager.Current.SpawnOnServer("PistolProjectile");
         obj.OwnerID = Context.Owner.ID;
-        obj.transform.position = Context.Visual.position + Context.Visual.forward * offsetForward + Context.Visual.up * offsetUp;
-        obj.transform.forward = Context.Visual.forward;
+        obj.transform.position = position;
+        obj.transform.forward = forward;
         obj.gameObject.SetActive(true);
     }
 }

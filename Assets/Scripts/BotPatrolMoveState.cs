@@ -21,7 +21,7 @@ public class BotPatrolMoveState : BotCharacterState
         currentMoveDuration = 0f;
         currentPatrolPoint = transform.position;
 
-        nextPatrolPoint = MultiplayerBotManager.Current.GetPatrolPoint(transform.position);
+        nextPatrolPoint = MultiplayerBotManager.Current.GetRandomPoint(transform.position);
         toRotate = Quaternion.LookRotation((nextPatrolPoint - currentPatrolPoint).normalized, Vector3.up);
     }
 

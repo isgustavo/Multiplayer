@@ -16,7 +16,8 @@ public class Bot : NonPlayer
     public override void OnEnable()
     {
         base.OnEnable();
-        MultiplayerBotManager.Current.AddBot(this);
+
+        MultiplayerBotManager.Current.Add(ID, this.gameObject);
     }
 
     public override void Update ()
@@ -30,6 +31,6 @@ public class Bot : NonPlayer
     public override void OnDisable ()
     {
         base.OnDisable();
-        MultiplayerBotManager.Current.RemoveBot(ID);
+        MultiplayerBotManager.Current.Remove(ID);
     }
 }

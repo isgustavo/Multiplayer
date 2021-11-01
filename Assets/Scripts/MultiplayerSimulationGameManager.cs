@@ -27,13 +27,13 @@ public class MultiplayerSimulationGameManager : MonoBehaviour
 
         foreach (Player player in players)
         {
-            PlayerStateMessage playerStateMessage = new PlayerStateMessage(player.PlayerState.ObjectTick, player.Visual.position, player.Visual.rotation, player.NetworkIdentity.netId);
+            PlayerStateMessage playerStateMessage = new PlayerStateMessage(player.PlayerState.ObjectTick, player.Visual.position, player.Visual.rotation, player.NetworkIdentity.netId, player.PlayerCharacter.CurrentHealth, player.currentPoints);
             groupMessage.playerStateMessages.Add(playerStateMessage);
         }
 
         foreach (NonPlayer obj in objects)
         {
-            ObjectStateMessage inputMessage = new ObjectStateMessage(obj.ObjectState.ObjectTick, obj.characterLogic.GetTransform().position, obj.characterLogic.GetTransform().rotation, obj.ID, obj.OwnerID, obj.characterLogic.GetLife());
+            ObjectStateMessage inputMessage = new ObjectStateMessage(obj.ObjectState.ObjectTick, obj.Character.Visual.position, obj.Character.Visual.rotation, obj.ID, obj.OwnerID, obj.Character.CurrentHealth);
             groupMessage.objectStateMessage.Add(inputMessage);
         }
 

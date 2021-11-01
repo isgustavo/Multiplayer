@@ -14,12 +14,12 @@ public class PlayerInput
     public static int MOUSE_SENSIBILITY = 10;
 
     public byte currentInput { get; private set; } = 0;
-    public float currentMouseAngle { get; private set; } = 0f;
+    public Vector2 currentMouse { get; private set; } = Vector2.zero;
 
-    public void ReceivedInput (byte input, float mouse)
+    public void ReceivedInput (byte input, Vector2 mouse)
     {
         currentInput = input;
-        currentMouseAngle = mouse;
+        currentMouse = mouse;
     }
 
     public void ReadInput()
@@ -33,7 +33,7 @@ public class PlayerInput
     public void ClearInput()
     {
         currentInput = 0;
-        currentMouseAngle = 0f;
+        currentMouse = Vector2.zero;
     }
 
     void ReadHorizontalAxis ()
@@ -64,7 +64,15 @@ public class PlayerInput
 
     void ReadMouse()
     {
-        currentMouseAngle = Input.GetAxis("Mouse X") * MOUSE_SENSIBILITY;
+        Ray cameraRay = Player.LocalPlayer.CharacterCamera.Cam.ScreenPointToRay(Input.mousePosition);
+        Plane virtualPlane = new Plane(Vector3.up, Vector3.zero);
+        float rayLenght;
+
+        if (virtualPlane.Raycast(cameraRay, out rayLenght))
+        {
+            Vector3 pointToLook = cameraRay.GetPoint(rayLenght);
+            currentMouse = new Vector2(pointToLook.x, pointToLook.z);
+        }
     }
 
     void ReadSpace ()

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Mirror;
+using System.Collections;
 
 public interface IProjectile
 {
@@ -8,62 +9,85 @@ public interface IProjectile
     void ForceDespawn ();
 }
 
-public class ProjectileLogic : MonoBehaviour, IProjectile, ICharacterLogic
+public class ProjectileLogic : Character, IProjectile
 {
     public static int COLLIDER_LAYER = 1 << 10;
-    NonPlayer poolID;
+    NonPlayer projectilePool;
 
-    [SerializeField]
-    SOMultiplayerProjectile projectileStats;
+    public SOMultiplayerProjectile ProjectileStats => (SOMultiplayerProjectile)Stats;
 
     float currentLifetime;
 
-    private void Awake ()
+    public override void Awake ()
     {
-        poolID = GetComponent<NonPlayer>();
+        base.Awake();
+
+        projectilePool = GetComponent<NonPlayer>();
     }
 
-    private void OnEnable ()
+    public override void OnEnable ()
     {
+        base.OnEnable();
+
         currentLifetime = 0f;
     }
 
     private void Update ()
     {
-        if (currentLifetime > projectileStats.Lifetime)
-            ForceDespawn();
+        if (currentLifetime > ProjectileStats.Lifetime)
+            TakeDamage(Stats.MaxHealth);
+        else
+        {
+            currentLifetime += Time.deltaTime;
 
-        currentLifetime += Time.deltaTime;
+            transform.Translate(transform.forward * ProjectileStats.MoveSpeed * Time.deltaTime, Space.World);
+        }
 
-        transform.Translate(transform.forward * projectileStats.Speed * Time.deltaTime, Space.World);
-    }
-
-    public int GetDamage ()
-    {
-        return projectileStats.Damage;
-    }
-
-    public uint GetOnwerId ()
-    {
-        return poolID.OwnerID;
     }
 
     public void ForceDespawn ()
     {
-        MultiplayerGamePoolManager.Current.Despawn(poolID);
+        TakeDamage(Stats.MaxHealth);
     }
 
-    public Transform GetTransform ()
+    public int GetDamage ()
     {
-        return transform;
+        return ProjectileStats.Damage;
     }
 
-    public int GetLife ()
+    public uint GetOnwerId ()
     {
-        return 1;
+        return projectilePool.OwnerID;
     }
 
-    public void SetLife (int life)
+    protected override void SetVisual ()
     {
+        base.SetVisual();
+
+        if (Player.LocalPlayer.NetworkIdentity.netId == projectilePool.OwnerID)
+        {
+            characterRenderer.material = MultiplayerObjectGameManager.Current.MultiplayerObjectMaterial.LocalPlayer;
+        }
+        else if (MultiplayerObjectGameManager.Current.Players.ContainsKey(projectilePool.OwnerID) == true)
+        {
+            characterRenderer.material = MultiplayerObjectGameManager.Current.MultiplayerObjectMaterial.OtherPlayer;
+        }
+        else
+        {
+            characterRenderer.material = MultiplayerObjectGameManager.Current.MultiplayerObjectMaterial.BotPlayer;
+        }
+    }
+
+    protected override void Dead ()
+    {
+        base.Dead();
+
+        StartCoroutine(WaitToDespawn());
+    }
+
+    IEnumerator WaitToDespawn ()
+    {
+        yield return new WaitForEndOfFrame();
+        MultiplayerGamePoolManager.Current.Despawn(projectilePool);
     }
 }

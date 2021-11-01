@@ -3,11 +3,15 @@ using UnityEngine;
 
 public class PlayerCharacterMoveState : PlayerServerClientState
 {
-    float turnValue;
 
     public PlayerCharacterMoveState (Transform transform) : base(transform)
     {
 
+    }
+
+    public override void OnEnterState (State previousState = null)
+    {
+        base.OnEnterState(previousState);
     }
 
     public override void UpdateLocalPlayer ()
@@ -22,7 +26,7 @@ public class PlayerCharacterMoveState : PlayerServerClientState
         }
         else
         {
-            MoveAndRotate(Player.LocalPlayer.PlayerInput.GetHorizontalAxis(), Player.LocalPlayer.PlayerInput.GetVerticalAxis(), Player.LocalPlayer.PlayerInput.currentMouseAngle);
+            MoveAndRotate(Player.LocalPlayer.PlayerInput.GetHorizontalAxis(), Player.LocalPlayer.PlayerInput.GetVerticalAxis(), Player.LocalPlayer.PlayerInput.currentMouse);
         }
     }
 
@@ -44,12 +48,11 @@ public class PlayerCharacterMoveState : PlayerServerClientState
         }
         else
         {
-            MoveAndRotate(Context.Owner.PlayerInput.GetHorizontalAxis(), Context.Owner.PlayerInput.GetVerticalAxis(), Context.Owner.PlayerInput.currentMouseAngle);
+            MoveAndRotate(Context.Owner.PlayerInput.GetHorizontalAxis(), Context.Owner.PlayerInput.GetVerticalAxis(), Context.Owner.PlayerInput.currentMouse);
         }
     }
 
-
-    void MoveAndRotate(float horizontalInput, float verticalInput, float mouseAngle)
+    void MoveAndRotate(float horizontalInput, float verticalInput, Vector2 rotate)
     {
 
         Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput);
@@ -57,14 +60,6 @@ public class PlayerCharacterMoveState : PlayerServerClientState
 
         transform.Translate(moveDirection * Context.Stats.MoveSpeed * Time.deltaTime, Space.World);
 
-        turnValue += mouseAngle;
-
-        transform.localRotation = Quaternion.Euler(0f, turnValue, 0f);
-
-        //if (moveDirection != Vector3.zero)
-        //{
-        //    Quaternion toRotate = Quaternion.LookRotation(moveDirection, Vector3.up);
-        //    transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotate, Context.Stats.RotateSpeed * Time.deltaTime);
-        //}
+        transform.LookAt(new Vector3(rotate.x, transform.position.y, rotate.y));
     }
 }

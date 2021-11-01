@@ -2,12 +2,12 @@
 
 public class CharacterCamera : MonoBehaviour
 {
-    Camera cam;
+    public Camera Cam { get; private set; }
 
     private void Awake ()
     {
-        cam = transform.GetComponentInChildren<Camera>(true);
-        if (cam == false)
+        Cam = transform.GetComponentInChildren<Camera>(true);
+        if (Cam == false)
         {
             Debug.Log("CharacterCamera without camera");
         }

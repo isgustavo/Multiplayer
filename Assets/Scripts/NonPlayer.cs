@@ -1,27 +1,13 @@
 ﻿using UnityEngine;
 using Mirror;
 
-public interface ICharacterLogic
-{
-    Transform GetTransform ();
-    int GetLife ();
-    void SetLife (int life);
-}
-
 public class NonPlayer : MultiplayerPoolID
 {
-    //public MultiplayerPoolID MultiplayerPoolID { get; protected set; }
-
-    //public virtual void Awake ()
-    //{
-    //    MultiplayerPoolID = GetComponent<MultiplayerPoolID>();
-    //}
-
-    public ICharacterLogic characterLogic;
+    public Character Character { get; private set; }
 
     public virtual void Awake()
     {
-        characterLogic = GetComponent<ICharacterLogic>();
+        Character = GetComponent<Character>();
     }
 
     public virtual void OnEnable ()
